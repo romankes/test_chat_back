@@ -1,5 +1,5 @@
 import {Request, Response} from 'express';
-import {NUserModel} from '../../models';
+import {NUserModel} from '@/models';
 import {User} from './namespace';
 
 export const getUser = (

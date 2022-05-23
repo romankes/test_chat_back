@@ -1,4 +1,5 @@
 export * from './user';
 export * from './auth';
-
-export * as chatControllers from './chat';
+export * from './connection';
+export * from './room';
+// export * as chatControllers from './chat';

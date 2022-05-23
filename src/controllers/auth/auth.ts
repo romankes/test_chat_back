@@ -1,5 +1,5 @@
 import {Request, Response} from 'express';
-import {UserModel, NUserModel} from '../../models';
+import {UserModel, NUserModel} from '@/models';
 import {Auth} from './namespace';
 import {compareSync, hashSync} from 'bcryptjs';
 import {sign} from 'jsonwebtoken';

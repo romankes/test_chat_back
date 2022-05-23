@@ -1,5 +1,5 @@
 import {NextFunction, Request, Response} from 'express';
-import {UserModel} from '../models';
+import {UserModel} from '@/models';
 
 export const parseHeader = (req: Request) => {
   const authorization = req.headers?.authorization || '';
@@ -26,8 +26,6 @@ export const validateToken = async (
       const user = await UserModel.findOne({token}).select(
         '_id name email phone role createdAt updatedAt token online',
       );
-
-      console.log(user);
 
       if (user) {
         res.locals = {

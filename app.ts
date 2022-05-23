@@ -1,19 +1,29 @@
+import 'module-alias/register';
+
 import mongoose from 'mongoose';
 import express from 'express';
 
 import morgan from 'morgan';
 import cors from 'cors';
 
-import * as Routes from './src/routes';
-
-import {loginMiddleware} from './src/middlewares';
+import * as Routes from '@/routes';
+import {connectionController} from '@/controllers';
+import {loginMiddleware} from '@/middlewares';
 
 import {Server} from 'socket.io';
-import {chatControllers} from './src/controllers';
+
+import {createServer} from 'http';
 
 // morgan();
 
+const PORT = 3001;
+const HOST = '192.168.0.104';
+
 const app = express();
+const server = createServer(app);
+
+const io = new Server(server);
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -28,15 +38,16 @@ mongoose.connect('mongodb://localhost:27017/chat_test');
 
 app.use('/auth', Routes.auth);
 app.use('/user', loginMiddleware.validateToken, Routes.user);
+app.use('/', loginMiddleware.validateToken, Routes.socket(io));
 
-const PORT = 3001;
+io.on('connection', (socket) => {
+  connectionController.connect(socket);
 
-const server = app.listen(PORT, () => {
-  console.log(`Example app listening at http://192.168.0.107:${PORT}`);
+  socket.on('disconnect', () => connectionController.disconnect(socket));
 });
 
-console.log(server.address());
+server.listen(PORT, HOST, () => {
+  console.log(`Example app listening at http://${HOST}:${PORT}`);
+});
 
-const io = new Server(server);
-
-io.on('connection', (socket) => chatControllers.connect(socket, io));
+// io.on('connection', (socket) => chatControllers.connect(socket, io));

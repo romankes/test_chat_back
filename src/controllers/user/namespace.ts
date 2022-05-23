@@ -1,4 +1,4 @@
-import {NUserModel} from '../../models';
+import {NUserModel} from '@/models';
 
 export namespace User {
   export type GetUserRes = {
