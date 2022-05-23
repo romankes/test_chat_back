@@ -6,5 +6,6 @@ export namespace NUserModel {
     avatar: string;
     online: boolean;
     token: string;
+    socket_id: string;
   };
 }

@@ -24,7 +24,7 @@ export const validateToken = async (
 
     if (token) {
       const user = await UserModel.findOne({token}).select(
-        '_id name email phone role createdAt updatedAt token',
+        '_id name email phone role createdAt updatedAt token online',
       );
 
       console.log(user);

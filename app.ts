@@ -8,6 +8,9 @@ import * as Routes from './src/routes';
 
 import {loginMiddleware} from './src/middlewares';
 
+import {Server} from 'socket.io';
+import {chatControllers} from './src/controllers';
+
 // morgan();
 
 const app = express();
@@ -28,6 +31,12 @@ app.use('/user', loginMiddleware.validateToken, Routes.user);
 
 const PORT = 3001;
 
-app.listen(PORT, () => {
-  console.log(`Example app listening at http://127.0.0.1:${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`Example app listening at http://192.168.0.107:${PORT}`);
 });
+
+console.log(server.address());
+
+const io = new Server(server);
+
+io.on('connection', (socket) => chatControllers.connect(socket, io));
