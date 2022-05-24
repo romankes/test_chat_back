@@ -1,3 +1,4 @@
+import {messageController} from '@/controllers';
 import {Router, Request, Response} from 'express';
 import {Server} from 'socket.io';
 
@@ -6,7 +7,9 @@ export const message = (io: Server) => {
 
   // console.log(io.sockets);
 
-  // chat.get('/', userControllers.getUser);
+  message.post('/', (req, res: any) =>
+    messageController.createMessage(req, res, io),
+  );
   // chat.get('/online', userControllers.getOnlineUsers);
   // user.delete('/', userControllers.removeUser);
   // user.put('/', userControllers.updateUser);

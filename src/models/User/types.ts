@@ -7,5 +7,9 @@ export namespace NUserModel {
     online: boolean;
     token: string;
     socket_id: string;
+
+    updatedAt: string;
+
+    rooms: string[];
   };
 }

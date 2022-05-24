@@ -4,6 +4,7 @@ import {Socket} from 'socket.io';
 export const connect = async (socket: Socket) => {
   try {
     const token = socket.handshake.auth.token.replace('Bearer ', '');
+    console.log(token);
 
     await UserModel.findOneAndUpdate({token}, {socket_id: socket.id});
   } catch (e) {
@@ -13,7 +14,7 @@ export const connect = async (socket: Socket) => {
 
 export const disconnect = async (socket: Socket) => {
   try {
-    const token = socket.handshake.auth.replace('Bearer ', '');
+    const token = socket.handshake.auth.token.replace('Bearer ', '');
 
     await UserModel.findOneAndUpdate({token}, {socket_id: ''});
   } catch (e) {

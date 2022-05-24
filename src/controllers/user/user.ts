@@ -8,6 +8,7 @@ export const getUser = (
 ) => {
   try {
     const {user} = res.locals;
+
     if (user) {
       res.send({user});
     } else {

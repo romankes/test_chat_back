@@ -1,14 +1,12 @@
-import {
-  NUserModel,
-  UserModel,
-  RoomModel,
-  RoomUserModel,
-  NRoomModel,
-} from '@/models';
+import {saveDocument} from '@/helpers';
+import {NUserModel, UserModel, RoomModel, NRoomModel} from '@/models';
 
 import {Request, Response} from 'express';
+import {Document, PaginateResult} from 'mongoose';
 import {Server} from 'socket.io';
 import {Room} from './namespace';
+
+//Room.CreateRoomRes
 
 export const createRoom = async (
   req: Request<{}, {}, Room.CreateRoomBody>,
@@ -16,81 +14,78 @@ export const createRoom = async (
   io: Server,
 ) => {
   try {
-    const {user_ids, title, role} = req.body;
+    const {user_ids, title} = req.body;
 
     const {user} = res.locals;
 
-    const users = await UserModel.find({_id: user_ids}, '_id socket_id');
+    const users = await UserModel.find({_id: user_ids});
 
-    const room = new RoomModel({
+    const doc = await new RoomModel({
       title,
-    });
-
-    await room.save();
+      users: users.map(({_id}) => _id),
+      admin: user._id,
+    }).save();
 
     await Promise.all(
-      users.map(async (item: NUserModel.Item) => {
-        const roomUser = new RoomUserModel({
-          user_id: item._id,
-          room_id: room._id,
-          role: item._id.toString() === user._id.toString() ? role : 'user',
-        });
-
-        await roomUser.save();
-
-        return roomUser;
+      users.map(async (user) => {
+        return await user.update({$push: {rooms: doc._id}});
       }),
     );
 
-    if (room) {
-      const roomUsers = await RoomUserModel.find({room_id: room._id});
+    const roomDoc = await doc.populate(
+      'users',
+      '-rooms -token -password -socket_id -__v -createdAt',
+    );
 
-      if (roomUsers.length) {
-        const userIds = roomUsers.map(({user_id}) => user_id);
+    const room = roomDoc.toJSON();
 
-        const users = await UserModel.find(
-          {_id: userIds},
-          '_id name email online avatar updatedAt',
-        );
-
-        if (users.length) {
-          const newRoom = {
-            room: {
-              title: room.title,
-              _id: room._id,
-              users: users.map((user) => ({
-                ...user._doc,
-                role:
-                  roomUsers.find(
-                    ({user_id}) => user_id.toString() === user._id.toString(),
-                  )?.role || 'user',
-              })),
-            },
-          };
-
-          users.forEach((item: NUserModel.Item) => {
-            if (item._id.toString() !== user._id.toString() && item.socket_id) {
-              io.to(item.socket_id).emit('room_create', newRoom);
-            }
-          });
-
-          res.status(200).send(newRoom as Room.CreateRoomRes);
-
-          return;
-        }
-      }
-    }
-
-    res.sendStatus(422);
+    res.send({
+      room: {
+        _id: room._id,
+        title: room.title,
+        admin: room.admin,
+        users: room.users,
+      },
+    });
   } catch (e) {
     console.log(e);
 
     res.sendStatus(422);
   }
 };
-export const getRooms = async (req: Request, res: Response) => {
+export const getRooms = async (
+  req: Request,
+  res: Response<{}, {user: NUserModel.Item}>,
+) => {
   try {
+    const {user} = res.locals;
+
     const {} = req.query;
+
+    //TODO: Remove ts ignore
+    const {docs, total, page}: PaginateResult<Document<NRoomModel.Item>> =
+      //@ts-ignore
+      await RoomModel.paginate(
+        {users: {$in: user._id}},
+        {
+          limit: 2,
+          page: 1,
+        },
+      );
+
+    const rooms = await Promise.all(
+      docs.map(
+        async (room) =>
+          await room.populate(
+            'users',
+            '-rooms -token -password -socket_id -__v -createdAt',
+          ),
+      ),
+    );
+
+    console.log(rooms);
+
+    res.send({rooms, total, page});
   } catch (e) {
     console.log(`error get rooms ${e}`);
   }

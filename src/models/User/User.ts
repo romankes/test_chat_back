@@ -1,5 +1,6 @@
 import {model, Schema} from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate';
+import {NUserModel} from './types';
 const UserSchema = new Schema(
   {
     name: {
@@ -30,8 +31,14 @@ const UserSchema = new Schema(
       type: String,
       default: '',
     },
+    rooms: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Room',
+      },
+    ],
   },
   {timestamps: true},
 );
 UserSchema.plugin(mongoosePaginate);
-export const UserModel = model('User', UserSchema);
+export const UserModel = model<NUserModel.Item>('User', UserSchema);

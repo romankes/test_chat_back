@@ -8,7 +8,7 @@ export const room = (io: Server) => {
   // console.log(io.sockets);
 
   room.post('/', (req, res: any) => roomController.createRoom(req, res, io));
-  // chat.get('/', userControllers.getUser);
+  room.get('/', roomController.getRooms);
   // chat.get('/online', userControllers.getOnlineUsers);
   // user.delete('/', userControllers.removeUser);
   // user.put('/', userControllers.updateUser);

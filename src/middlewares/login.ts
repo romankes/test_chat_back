@@ -32,6 +32,8 @@ export const validateToken = async (
           user,
         };
         next();
+      } else {
+        res.sendStatus(401);
       }
     } else {
       res.sendStatus(401);

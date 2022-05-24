@@ -1,8 +1,9 @@
 import {NUserModel} from '@/models';
 
-export namespace Room {
-  export type GetRoomsRes = {
-    room: NUserModel.Item;
+export namespace Message {
+  export type CreateMessageBody = {
+    text: string;
+    room_id: string;
   };
 
   export type User = {
@@ -15,22 +16,15 @@ export namespace Room {
     role: 'user' | 'admin';
   };
 
-  export type Item = {
-    title: string;
-    _id: string;
-    admin: string;
-    users: string[];
-  };
+  // export type CreateRoomBody = {
+  //   user_ids: string[];
+  //   title: string;
+  //   role: string;
+  // };
 
-  export type CreateRoomBody = {
-    user_ids: string[];
-    title: string;
-    role: string;
-  };
-
-  export type CreateRoomRes = {
-    room: Item | null;
-  };
+  // export type CreateRoomRes = {
+  //   room: Item | null;
+  // };
   // {
   // room: {
   //   _id: string;
