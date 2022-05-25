@@ -34,11 +34,12 @@ morgan.token('body', (req: any) => {
 
 app.use(morgan(':method :url :body - :response-time ms '));
 // app.use(morgan('tiny'));
+app.use('/uploads', express.static('uploads'));
 mongoose.connect('mongodb://localhost:27017/chat_test');
 
 app.use('/auth', Routes.auth);
 app.use('/user', loginMiddleware.validateToken, Routes.user);
-app.use('/', loginMiddleware.validateToken, Routes.socket(io));
+app.use('/', Routes.socket(io));
 
 io.on('connection', (socket) => {
   connectionController.connect(socket);

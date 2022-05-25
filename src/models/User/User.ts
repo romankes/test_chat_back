@@ -3,7 +3,7 @@ import mongoosePaginate from 'mongoose-paginate';
 import {NUserModel} from './types';
 const UserSchema = new Schema(
   {
-    name: {
+    username: {
       type: String,
       default: '',
     },

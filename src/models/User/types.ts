@@ -1,7 +1,7 @@
 export namespace NUserModel {
   export type Item = {
     email: string;
-    name: string;
+    username: string;
     _id: string;
     avatar: string;
     online: boolean;

@@ -5,6 +5,10 @@ export namespace User {
     user: NUserModel.Item;
   };
 
+  export type UpdateUserBody = {
+    username: string;
+  };
+
   //   export type UpdateUserBody = {
   //     name: string;
   //     email: string;
