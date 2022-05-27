@@ -2,6 +2,8 @@ import {Request, Response} from 'express';
 import {NUserModel, UserModel} from '@/models';
 import {User} from './namespace';
 
+import multer from 'multer';
+
 export const getUser = (
   req: Request,
   res: Response<User.GetUserRes, {user: NUserModel.Item}>,
