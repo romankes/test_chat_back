@@ -1,5 +1,11 @@
 import {saveDocument} from '@/helpers';
-import {NUserModel, UserModel, RoomModel, NRoomModel} from '@/models';
+import {
+  NUserModel,
+  UserModel,
+  RoomModel,
+  NRoomModel,
+  MessageModel,
+} from '@/models';
 
 import {Request, Response} from 'express';
 import {Document, PaginateResult} from 'mongoose';
@@ -63,15 +69,7 @@ export const getRooms = async (
     const {} = req.query;
 
     //TODO: Remove ts ignore
-    const {docs, total, page}: PaginateResult<Document<NRoomModel.Item>> =
-      //@ts-ignore
-      await RoomModel.paginate(
-        {users: {$in: user._id}},
-        {
-          limit: 2,
-          page: 1,
-        },
-      );
+    const docs = await RoomModel.find({users: {$in: user._id}});
 
     const rooms = await Promise.all(
       docs.map(
@@ -85,8 +83,34 @@ export const getRooms = async (
 
     console.log(rooms);
 
-    res.send({rooms, total, page});
+    res.send({rooms});
   } catch (e) {
     console.log(`error get rooms ${e}`);
+  }
+};
+
+export const getRoom = async (
+  req: Request<Room.GetRoomParams>,
+  res: Response,
+) => {
+  try {
+    const {id} = req.params;
+
+    const room = await RoomModel.findById(id).populate(
+      'users',
+      '-rooms -token -password -socket_id -__v -createdAt',
+    );
+
+    const messages = await MessageModel.find({room: id}, '-room -__v').populate(
+      'user',
+      '-rooms -token -password -socket_id -__v -createdAt',
+    );
+
+    res.send({
+      room: room.toJSON(),
+      messages,
+    });
+  } catch (e) {
+    console.log(`error get room ${e}`);
   }
 };

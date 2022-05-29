@@ -26,6 +26,7 @@ const io = new Server(server);
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static('uploads'));
 app.use(express.urlencoded({extended: true}));
 
 morgan.token('body', (req: any) => {
@@ -34,13 +35,16 @@ morgan.token('body', (req: any) => {
 
 app.use(morgan(':method :url :body - :response-time ms '));
 // app.use(morgan('tiny'));
-app.use('/uploads', express.static('uploads'));
 mongoose.connect('mongodb://localhost:27017/chat_test');
 
 app.use('/auth', Routes.auth);
 app.use('/user', loginMiddleware.validateToken, Routes.user);
 app.use('/', Routes.socket(io));
+app.use('/uploads/users/:filename', (req, res) => {
+  console.log(`${__dirname}\\uploads\\users\\${req.params.filename}`);
 
+  res.sendFile(`${__dirname}\\uploads\\users\\${req.params.filename}`);
+});
 io.on('connection', (socket) => {
   connectionController.connect(socket);
 

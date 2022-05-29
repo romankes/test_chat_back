@@ -31,8 +31,6 @@ export const updateUser = async (
 
   const {user} = res.locals;
 
-  console.log(req.file.path);
-
   await UserModel.findByIdAndUpdate(user._id, {
     username,
     avatar: req.file.path.replace(/^\/\//g, '/'),

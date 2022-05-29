@@ -9,6 +9,7 @@ export const room = (io: Server) => {
 
   room.post('/', (req, res: any) => roomController.createRoom(req, res, io));
   room.get('/', roomController.getRooms);
+  room.get('/:id', roomController.getRoom);
   // chat.get('/online', userControllers.getOnlineUsers);
   // user.delete('/', userControllers.removeUser);
   // user.put('/', userControllers.updateUser);

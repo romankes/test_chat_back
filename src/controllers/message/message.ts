@@ -11,7 +11,7 @@ export const createMessage = async (
   try {
     const {room_id, text} = req.body;
 
-    const {user} = res.locals;
+    const {user: currentUser} = res.locals;
 
     const room = await RoomModel.findById(room_id).populate(
       'users',
@@ -22,21 +22,26 @@ export const createMessage = async (
       const messageDoc = await new MessageModel({
         text,
         room: room_id,
-        user: user._id,
+        user: currentUser._id,
       }).save();
+
+      const messageDocForRes = await messageDoc.populate(
+        'user',
+        '-rooms -token -password -socket_id -__v -createdAt',
+      );
 
       room.toJSON().users.forEach((user) => {
         //@ts-ignore
-        if (user.socket_id) {
+
+        if (user.socket_id !== currentUser.socket_id) {
           //@ts-ignore
-          console.log(user.socket_id);
 
           //@ts-ignore
           io.to(user.socket_id).emit('create_message', messageDoc.toJSON());
         }
       });
 
-      res.send({});
+      res.send({message: messageDocForRes});
     } else {
       res.sendStatus(422);
     }

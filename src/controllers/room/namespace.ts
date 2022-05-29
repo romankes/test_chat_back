@@ -31,6 +31,10 @@ export namespace Room {
   export type CreateRoomRes = {
     room: Item | null;
   };
+
+  export type GetRoomParams = {
+    id: string;
+  };
   // {
   // room: {
   //   _id: string;
