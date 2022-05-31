@@ -66,19 +66,33 @@ export const getRooms = async (
   try {
     const {user} = res.locals;
 
+    //TODO: add ts
     const {} = req.query;
 
     //TODO: Remove ts ignore
     const docs = await RoomModel.find({users: {$in: user._id}});
 
     const rooms = await Promise.all(
-      docs.map(
-        async (room) =>
-          await room.populate(
-            'users',
-            '-rooms -token -password -socket_id -__v -createdAt',
-          ),
-      ),
+      docs.map(async (room) => {
+        const item = await room.populate(
+          'users',
+          '-rooms -token -password -socket_id -__v -createdAt',
+        );
+
+        const message = await MessageModel.findOne(
+          {room: item._id},
+          {},
+          {sort: {created_at: -1}},
+        ).populate(
+          'user',
+          '-rooms -token -password -socket_id -__v -createdAt',
+        );
+
+        return {
+          ...item.toJSON(),
+          message: message ? message.toJSON() : null,
+        };
+      }),
     );
 
     console.log(rooms);
