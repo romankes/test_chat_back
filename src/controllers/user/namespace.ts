@@ -1,8 +1,8 @@
-import {NUserModel} from '@/models';
+import {UserModelTypes} from '@/models';
 
 export namespace User {
   export type GetUserRes = {
-    user: NUserModel.Item;
+    user: UserModelTypes.Item;
   };
 
   export type UpdateUserBody = {

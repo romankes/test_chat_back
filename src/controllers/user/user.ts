@@ -1,12 +1,13 @@
 import {Request, Response} from 'express';
-import {NUserModel, UserModel} from '@/models';
+import {UserModelTypes, UserModel} from '@/models';
 import {User} from './namespace';
 
 import multer from 'multer';
+import {userService} from '@/services';
 
 export const getUser = (
   req: Request,
-  res: Response<User.GetUserRes, {user: NUserModel.Item}>,
+  res: Response<User.GetUserRes, {user: UserModelTypes.Item}>,
 ) => {
   try {
     const {user} = res.locals;
@@ -14,7 +15,7 @@ export const getUser = (
     if (user) {
       res.send({user});
     } else {
-      res.sendStatus(401);
+      res.sendStatus(422);
     }
   } catch (e) {
     console.log(`get user action ${e}`);
@@ -25,21 +26,42 @@ export const getOnlineUsers = () => {};
 
 export const updateUser = async (
   req: Request<{}, {}, User.UpdateUserBody>,
-  res: Response<{}, {user: NUserModel.Item}>,
+  res: Response<{}, {user: UserModelTypes.Item}>,
 ) => {
-  const {username = ''} = req.body;
+  try {
+    const {username = ''} = req.body;
 
-  const {user} = res.locals;
+    const {user: currentUser} = res.locals;
 
-  await UserModel.findByIdAndUpdate(user._id, {
-    username,
-    avatar: req.file.path.replace(/^\/\//g, '/'),
-  });
+    const user = await userService.updateUser(
+      {
+        username,
+        avatar: req.file.path.replace(/^\/\//g, '/'),
+      },
+      currentUser._id,
+    );
 
-  const newUser = await UserModel.findById(
-    user._id,
-    '_id avatar username email',
-  );
+    if (user) {
+      res.json({user});
+    } else {
+      res.sendStatus(422);
+    }
+  } catch (e) {
+    console.log(`error update user ${e}
+    `);
+    res.sendStatus(422);
+  }
+};
 
-  res.send({user: newUser});
+export const getUsers = async (req: Request, res: Response) => {
+  try {
+    const {username = '', page = 1, per = 10} = req.query;
+
+    const users = await userService.getUsers(+page, +per, username as string);
+
+    res.json(users);
+  } catch (e) {
+    console.log(`error get users ${e}`);
+    res.sendStatus(422);
+  }
 };

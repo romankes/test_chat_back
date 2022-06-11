@@ -1,6 +1,6 @@
 import {model, Schema} from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate';
-import {NMessageModel} from './types';
+import {MessageModelTypes} from './types';
 const MessageSchema = new Schema(
   {
     text: String,
@@ -15,4 +15,7 @@ const MessageSchema = new Schema(
   {timestamps: true},
 );
 MessageSchema.plugin(mongoosePaginate);
-export const MessageModel = model<NMessageModel.Item>('Message', MessageSchema);
+export const MessageModel = model<MessageModelTypes.Item>(
+  'Message',
+  MessageSchema,
+);

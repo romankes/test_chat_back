@@ -1,58 +1,36 @@
 import {saveDocument} from '@/helpers';
-import {
-  NUserModel,
-  UserModel,
-  RoomModel,
-  NRoomModel,
-  MessageModel,
-} from '@/models';
+import {UserModelTypes, UserModel, RoomModel, MessageModel} from '@/models';
 
 import {Request, Response} from 'express';
-import {Document, PaginateResult} from 'mongoose';
 import {Server} from 'socket.io';
 import {Room} from './namespace';
 
+import {roomService} from '@/services';
 //Room.CreateRoomRes
 
 export const createRoom = async (
   req: Request<{}, {}, Room.CreateRoomBody>,
-  res: Response<Room.CreateRoomRes, {user: NUserModel.Item}>,
+  res: Response,
   io: Server,
 ) => {
   try {
     const {user_ids, title} = req.body;
-
     const {user} = res.locals;
 
-    const users = await UserModel.find({_id: user_ids});
-
-    const doc = await new RoomModel({
-      title,
-      users: users.map(({_id}) => _id),
-      admin: user._id,
-    }).save();
-
-    await Promise.all(
-      users.map(async (user) => {
-        return await user.update({$push: {rooms: doc._id}});
-      }),
-    );
-
-    const roomDoc = await doc.populate(
-      'users',
-      '-rooms -token -password -socket_id -__v -createdAt',
-    );
-
-    const room = roomDoc.toJSON();
-
-    res.send({
-      room: {
-        _id: room._id,
-        title: room.title,
-        admin: room.admin,
-        users: room.users,
+    const room = await roomService.createRoom(
+      {
+        admin: user._id,
+        title: title,
+        users: user_ids,
       },
-    });
+      io,
+    );
+
+    if (room) {
+      res.send({room});
+    } else {
+      res.sendStatus(422);
+    }
   } catch (e) {
     console.log(e);
 
@@ -61,43 +39,17 @@ export const createRoom = async (
 };
 export const getRooms = async (
   req: Request,
-  res: Response<{}, {user: NUserModel.Item}>,
+  res: Response<{}, {user: UserModelTypes.Item}>,
 ) => {
   try {
     const {user} = res.locals;
 
     //TODO: add ts
-    const {} = req.query;
+    const {page = 1, per = 10} = req.query;
 
-    //TODO: Remove ts ignore
-    const docs = await RoomModel.find({users: {$in: user._id}});
+    const rooms = await roomService.getRooms(+page, +per, user._id);
 
-    const rooms = await Promise.all(
-      docs.map(async (room) => {
-        const item = await room.populate(
-          'users',
-          '-rooms -token -password -socket_id -__v -createdAt',
-        );
-
-        const message = await MessageModel.findOne(
-          {room: item._id},
-          {},
-          {sort: {created_at: -1}},
-        ).populate(
-          'user',
-          '-rooms -token -password -socket_id -__v -createdAt',
-        );
-
-        return {
-          ...item.toJSON(),
-          message: message ? message.toJSON() : null,
-        };
-      }),
-    );
-
-    console.log(rooms);
-
-    res.send({rooms});
+    res.json(rooms);
   } catch (e) {
     console.log(`error get rooms ${e}`);
   }
@@ -110,21 +62,35 @@ export const getRoom = async (
   try {
     const {id} = req.params;
 
-    const room = await RoomModel.findById(id).populate(
-      'users',
-      '-rooms -token -password -socket_id -__v -createdAt',
-    );
+    const {room, messages} = await roomService.getRoomDetail(id);
 
-    const messages = await MessageModel.find({room: id}, '-room -__v').populate(
-      'user',
-      '-rooms -token -password -socket_id -__v -createdAt',
-    );
-
-    res.send({
-      room: room.toJSON(),
-      messages,
-    });
+    if (room) {
+      res.json({
+        room,
+        messages,
+      });
+    } else {
+      res.sendStatus(422);
+    }
   } catch (e) {
     console.log(`error get room ${e}`);
+  }
+};
+
+export const removeRoom = async (
+  req: Request,
+  res: Response,
+  io: Server,
+): Promise<void> => {
+  try {
+    const {id} = req.params;
+    const {user} = res.locals;
+
+    const room = await roomService.removeRoom(id, user._id, io);
+
+    res.json({room});
+  } catch (e) {
+    console.log(`error remove room ${e}`);
+    res.sendStatus(422);
   }
 };

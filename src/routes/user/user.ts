@@ -20,6 +20,8 @@ const user = Router();
 
 user.get('/', userControllers.getUser);
 user.get('/online', userControllers.getOnlineUsers);
+user.get('/all', userControllers.getUsers);
+
 // user.delete('/', userControllers.removeUser);
 user.put('/', upload.single('avatar'), userControllers.updateUser);
 user.patch('/', upload.single('avatar'), userControllers.updateUser);

@@ -1,4 +1,4 @@
-import {NUserModel} from '@/models';
+import {UserModelTypes} from '@/models';
 
 export namespace Message {
   export type CreateMessageBody = {

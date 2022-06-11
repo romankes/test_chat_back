@@ -1,8 +1,8 @@
-import {NUserModel} from '@/models';
+import {UserModelTypes} from '@/models';
 
 export namespace Room {
   export type GetRoomsRes = {
-    room: NUserModel.Item;
+    room: UserModelTypes.Item;
   };
 
   export type User = {

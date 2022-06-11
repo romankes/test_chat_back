@@ -1,5 +1,5 @@
 import {roomController} from '@/controllers';
-import {Router} from 'express';
+import {Response, Router} from 'express';
 import {Server} from 'socket.io';
 
 export const room = (io: Server) => {
@@ -7,11 +7,11 @@ export const room = (io: Server) => {
 
   // console.log(io.sockets);
 
-  room.post('/', (req, res: any) => roomController.createRoom(req, res, io));
+  room.post('/', (req, res) => roomController.createRoom(req, res, io));
   room.get('/', roomController.getRooms);
   room.get('/:id', roomController.getRoom);
+  room.delete('/:id', (req, res) => roomController.removeRoom(req, res, io));
   // chat.get('/online', userControllers.getOnlineUsers);
-  // user.delete('/', userControllers.removeUser);
   // user.put('/', userControllers.updateUser);
   // user.patch('/', userControllers.updateUser);
 

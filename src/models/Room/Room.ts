@@ -1,6 +1,6 @@
 import {model, Schema} from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate';
-import {NRoomModel} from './types';
+import {RoomModelTypes} from './types';
 const RoomSchema = new Schema(
   {
     title: {
@@ -20,4 +20,4 @@ const RoomSchema = new Schema(
   {timestamps: true},
 );
 RoomSchema.plugin(mongoosePaginate);
-export const RoomModel = model<NRoomModel.Item>('Room', RoomSchema);
+export const RoomModel = model<RoomModelTypes.Item>('Room', RoomSchema);

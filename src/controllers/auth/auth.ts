@@ -1,32 +1,17 @@
 import {Request, Response} from 'express';
-import {UserModel, NUserModel} from '@/models';
 import {Auth} from './namespace';
-import {compareSync, hashSync} from 'bcryptjs';
-import {sign} from 'jsonwebtoken';
+
+import {authService} from '@/services';
 
 export const signIn = async (
   req: Request<{}, {}, Auth.SignInBody>,
   res: Response<Auth.SignInRes>,
 ) => {
   try {
-    const {email, password} = req.body;
+    const token = await authService.signIn(req.body);
 
-    const user = (await UserModel.findOne({email})) as any;
-
-    if (user) {
-      const checker = compareSync(password, user.password);
-
-      if (checker) {
-        const token = sign({data: user}, 'MySuP3R_z3kr3t', {
-          expiresIn: '6h',
-        });
-
-        await UserModel.findByIdAndUpdate(user._id, {token});
-
-        res.status(200).send({token});
-      } else {
-        res.sendStatus(401);
-      }
+    if (token) {
+      res.json({token});
     } else {
       res.sendStatus(401);
     }
@@ -40,24 +25,10 @@ export const signUp = async (
   res: Response<Auth.SignUpRes>,
 ) => {
   try {
-    const {email, password} = req.body;
+    const token = await authService.signUp(req.body);
 
-    const isExist = await UserModel.exists({email});
-
-    if (!isExist) {
-      const passwordHash = hashSync(password);
-
-      const user = new UserModel({email, password: passwordHash});
-
-      await user.save();
-
-      const token = sign({data: user}, 'MySuP3R_z3kr3t', {
-        expiresIn: '6h',
-      });
-
-      await UserModel.findByIdAndUpdate(user._id, {token});
-
-      res.status(200).send({token});
+    if (token) {
+      res.json({token});
     } else {
       res.sendStatus(422);
     }
