@@ -6,7 +6,7 @@ import {MessageModelTypes} from './types';
 export const getMessagesByRoom = async (roomId: string): Promise<any[]> => {
   const messages = await MessageModel.find({room: roomId}, '-room').populate(
     'user',
-    '-rooms -token -password -socket_id -__v -createdAt',
+    '-rooms -token -password -socket_id -__v -createdAt -currentRoom -deviceToken',
   );
 
   return messages.map((message) => message.toJSON());
@@ -23,7 +23,10 @@ export const getLastMessageByRoom = async (roomId: string): Promise<any> => {
     {room: roomId},
     {},
     {sort: {created_at: -1}},
-  ).populate('user', '-rooms -token -password -socket_id -__v -createdAt');
+  ).populate(
+    'user',
+    '-rooms -token -password -socket_id -__v -createdAt -currentRoom -deviceToken',
+  );
 
   return message;
 };
@@ -38,7 +41,7 @@ export const create = async (
 
   const message = await doc.populate(
     'user',
-    '-rooms -token -password -socket_id -__v -createdAt',
+    '-rooms -token -password -socket_id -__v -createdAt -currentRoom -deviceToken',
   );
 
   return message.toJSON();

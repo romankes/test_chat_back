@@ -11,6 +11,9 @@ export namespace UserModelTypes {
     updatedAt: string;
 
     rooms: string[];
+
+    currentRoom: string;
+    deviceToken: string;
   };
 
   export type UpdatePayload = {

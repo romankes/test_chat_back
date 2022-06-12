@@ -14,8 +14,6 @@ import {Server} from 'socket.io';
 
 import {createServer} from 'http';
 
-// morgan();
-
 const PORT = 3001;
 const HOST = '192.168.0.104';
 

@@ -49,7 +49,9 @@ export const updateRooms = async (
   id: string,
   room: string[],
 ): Promise<UserModelTypes.Item> => {
-  const user = await UserModel.findByIdAndUpdate(id, {$push: {room}});
+  console.log(id, room);
+
+  const user = await UserModel.findByIdAndUpdate(id, {$push: {rooms: room}});
 
   return user.toJSON();
 };
@@ -73,4 +75,24 @@ export const getUsersByName = async (
     totalPage: Math.ceil(totalCount / per),
     users: users.map((users) => users.toJSON()),
   };
+};
+
+export const updateCurrentRoom = async (
+  room: string,
+  user: string,
+): Promise<any> => {
+  await UserModel.findByIdAndUpdate(user, {currentRoom: room});
+};
+
+export const removeRoom = async (room: string, user: string): Promise<any> => {
+  await UserModel.findByIdAndUpdate(user, {$pull: {rooms: room}});
+};
+
+export const updateDeviceToken = async (
+  userId: string,
+  token: string,
+): Promise<any> => {
+  const user = await UserModel.findByIdAndUpdate(userId, {deviceToken: token});
+
+  return user.toJSON();
 };

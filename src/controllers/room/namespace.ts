@@ -23,7 +23,7 @@ export namespace Room {
   };
 
   export type CreateRoomBody = {
-    user_ids: string[];
+    users: string[];
     title: string;
     role: string;
   };

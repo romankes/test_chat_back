@@ -37,6 +37,14 @@ const UserSchema = new Schema(
         ref: 'Room',
       },
     ],
+    currentRoom: {
+      type: String,
+      default: '',
+    },
+    deviceToken: {
+      type: String,
+      default: String,
+    },
   },
   {timestamps: true},
 );

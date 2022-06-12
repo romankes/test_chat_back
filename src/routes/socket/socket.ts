@@ -10,7 +10,6 @@ export const socket = (io: Server) => {
 
   // console.log(io.sockets);
 
-  // ,
   socket.use('/message', loginMiddleware.validateToken, Routers.message(io));
   socket.use('/room', loginMiddleware.validateToken, Routers.room(io));
 

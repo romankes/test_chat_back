@@ -39,7 +39,7 @@ export const getRoom = async (id: string): Promise<any> => {
 
   const room = await doc.populate(
     'users',
-    '-rooms -token -password -__v -createdAt -socket_id',
+    '-rooms -token -password -__v -createdAt -socket_id -currentRoom -deviceToken',
   );
 
   return room;
@@ -54,11 +54,22 @@ export const getRooms = async (
     {users: {$in: userId}},
     {},
     {skip: (page - 1) * per, limit: per},
-  ).populate('users', '-rooms -token -password -__v -createdAt -socket_id');
+  ).populate(
+    'users',
+    '-rooms -token -password -__v -createdAt -socket_id -currentRoom -deviceToken',
+  );
   const totalCount = await RoomModel.countDocuments();
 
   return {
     totalPage: Math.ceil(totalCount / per),
     rooms: rooms.map((room) => room.toJSON()),
   };
+};
+
+export const leaveRoom = async (roomId: string, user: string): Promise<any> => {
+  const room = await RoomModel.findByIdAndUpdate(roomId, {
+    $pull: {users: user},
+  });
+
+  return room.toJSON();
 };

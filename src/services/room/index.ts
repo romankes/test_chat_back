@@ -11,16 +11,20 @@ export const createRoom = async (
   if (usersData.length === data.users.length) {
     const room = await db.room.create(data);
 
-    const users = usersData.map((user) => {
-      const obj = JSON.parse(JSON.stringify(user));
+    const users = await Promise.all(
+      usersData.map(async (user) => {
+        const obj = JSON.parse(JSON.stringify(user));
 
-      delete obj['socket_id'];
+        await db.user.updateRooms(user._id, [room._id]);
 
-      return obj;
-    });
+        delete obj['socket_id'];
+
+        return obj;
+      }),
+    );
 
     usersData.forEach((user) => {
-      if (user.socket_id && user.socket_id !== room.admin) {
+      if (user.socket_id && user._id.toString() !== room.admin.toString()) {
         io.to(user.socket_id).emit('create_room', {
           ...room,
           users,
@@ -42,23 +46,41 @@ export const removeRoom = async (
   currentUser: string,
   io: Server,
 ): Promise<string> => {
-  const users: any[] = await db.room.getAllUsersByRoom(roomId);
+  const room = await db.room.getRoom(roomId);
+  const users = await db.room.getAllUsersByRoom(roomId);
+
+  const isAdmin = room.admin === currentUser;
 
   users.forEach((user) => {
     if (user.socket_id && user.socket_io !== currentUser) {
-      io.to(user.socket_io).emit('remove_room', {id: roomId});
+      io.to(user.socket_io).emit(isAdmin ? 'remove_room' : 'leave_room', {
+        id: roomId,
+      });
     }
   });
 
-  await db.message.removeAllByRoomId(roomId);
-  await db.room.removeRoom(roomId);
+  if (isAdmin) {
+    await db.message.removeAllByRoomId(roomId);
+    await db.room.removeRoom(roomId);
+
+    await Promise.all(
+      users.map(async ({_id}) => {
+        await db.user.removeRoom(roomId, _id);
+      }),
+    );
+  } else {
+    await db.room.leaveRoom(roomId, currentUser);
+    await db.user.removeRoom(roomId, currentUser);
+  }
 
   return roomId;
 };
 
-export const getRoomDetail = async (roomId: string) => {
+export const getRoomDetail = async (roomId: string, userId: string) => {
   const room = await db.room.getRoom(roomId);
   const messages = await db.message.getMessagesByRoom(roomId);
+
+  await db.notReadMessage.read(userId, roomId);
 
   return {
     room: room.toJSON(),
@@ -77,15 +99,26 @@ export const getRooms = async (
     rooms.map(async (room: any) => {
       const message = await db.message.getLastMessageByRoom(room._id);
 
+      const notRead = await db.notReadMessage.getAllItemByRoom(
+        room._id,
+        userId,
+      );
+
       return {
         ...room,
         message,
+        notReadCount: notRead.length,
       };
     }),
   );
 
   return {
-    rooms: fullRooms,
+    rooms: fullRooms.sort((cur, next) => {
+      return (
+        new Date(next.message?.createdAt || next.createdAt).getMilliseconds() -
+        new Date(cur.message?.createdAt || cur.createdAt).getMilliseconds()
+      );
+    }),
     totalPage,
   };
 };

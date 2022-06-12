@@ -21,6 +21,8 @@ const user = Router();
 user.get('/', userControllers.getUser);
 user.get('/online', userControllers.getOnlineUsers);
 user.get('/all', userControllers.getUsers);
+user.put('/deviceToken', userControllers.updateDeviceToken);
+user.patch('/deviceToken', userControllers.updateDeviceToken);
 
 // user.delete('/', userControllers.removeUser);
 user.put('/', upload.single('avatar'), userControllers.updateUser);

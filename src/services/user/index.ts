@@ -20,3 +20,12 @@ export const getUsers = async (
 
   return {users, totalPage};
 };
+
+export const updateDeviceToken = async (
+  userId: string,
+  token: string,
+): Promise<any> => {
+  const user = await db.user.updateDeviceToken(userId, token);
+
+  return user;
+};

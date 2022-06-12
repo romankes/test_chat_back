@@ -14,14 +14,14 @@ export const createRoom = async (
   io: Server,
 ) => {
   try {
-    const {user_ids, title} = req.body;
+    const {users, title} = req.body;
     const {user} = res.locals;
 
     const room = await roomService.createRoom(
       {
         admin: user._id,
         title: title,
-        users: user_ids,
+        users: users,
       },
       io,
     );
@@ -61,8 +61,9 @@ export const getRoom = async (
 ) => {
   try {
     const {id} = req.params;
+    const {user} = res.locals;
 
-    const {room, messages} = await roomService.getRoomDetail(id);
+    const {room, messages} = await roomService.getRoomDetail(id, user._id);
 
     if (room) {
       res.json({

@@ -4,6 +4,7 @@ import {User} from './namespace';
 
 import multer from 'multer';
 import {userService} from '@/services';
+import {sendPush} from '@/helpers/sendPush';
 
 export const getUser = (
   req: Request,
@@ -62,6 +63,20 @@ export const getUsers = async (req: Request, res: Response) => {
     res.json(users);
   } catch (e) {
     console.log(`error get users ${e}`);
+    res.sendStatus(422);
+  }
+};
+
+export const updateDeviceToken = async (req: Request, res: Response) => {
+  try {
+    const {token} = req.body;
+    const {user} = res.locals;
+
+    const newUser = await userService.updateDeviceToken(user._id, token);
+
+    res.sendStatus(204);
+  } catch (e) {
+    console.log(`error update device token ${e}`);
     res.sendStatus(422);
   }
 };
