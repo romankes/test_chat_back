@@ -11,7 +11,7 @@ export const create = async (
   return room.toJSON();
 };
 
-export const getAllUsersByRoom = async (id: string): Promise<any[]> => {
+export const getUsersByItem = async (id: string): Promise<any[]> => {
   const doc = await RoomModel.findById(id);
 
   const room = await doc.populate(
@@ -28,13 +28,13 @@ export const exists = async (_id: string): Promise<boolean> => {
   return !!isExists;
 };
 
-export const removeRoom = async (id: string): Promise<string> => {
+export const remove = async (id: string): Promise<string> => {
   await RoomModel.findByIdAndDelete(id);
 
   return id;
 };
 
-export const getRoom = async (id: string): Promise<any> => {
+export const getDetail = async (id: string): Promise<any> => {
   const doc = await RoomModel.findById(id);
 
   const room = await doc.populate(
@@ -45,7 +45,7 @@ export const getRoom = async (id: string): Promise<any> => {
   return room;
 };
 
-export const getRooms = async (
+export const getItems = async (
   page: number,
   per: number,
   userId: string,
@@ -66,10 +66,21 @@ export const getRooms = async (
   };
 };
 
-export const leaveRoom = async (roomId: string, user: string): Promise<any> => {
-  const room = await RoomModel.findByIdAndUpdate(roomId, {
+export const leave = async (roomId: string, user: string): Promise<any> => {
+  const doc = await RoomModel.findByIdAndUpdate(roomId, {
     $pull: {users: user},
   });
 
-  return room.toJSON();
+  const room = {
+    ...doc.toJSON(),
+    users: doc.toJSON().users.filter((_id) => _id !== user),
+  };
+
+  if (!room.users.length) {
+    const room = await RoomModel.findByIdAndDelete(roomId);
+
+    return {room: room.toJSON(), command: 'remove'};
+  }
+
+  return {room, command: 'leave'};
 };

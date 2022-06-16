@@ -1,22 +1,21 @@
 import {db} from '@/models';
-import {TUpdateUserPayload} from './types';
+import {UserService} from './types';
 
-export const updateUser = async (
-  data: TUpdateUserPayload,
+export const updateItem = async (
+  data: UserService.UpdateItem,
   userId: string,
-): Promise<any> => {
+): Promise<UserService.ResUpdateItem | null> => {
   const user = await db.user.update(userId, data);
 
   return user;
 };
 
-//TODO: add typescript
-export const getUsers = async (
+export const getItems = async (
   page: number,
   per: number,
   username: string,
-): Promise<any> => {
-  const {users, totalPage} = await db.user.getUsersByName(username, page, per);
+): Promise<UserService.ResGetItems> => {
+  const {users, totalPage} = await db.user.getItemsByName(username, page, per);
 
   return {users, totalPage};
 };
@@ -24,7 +23,7 @@ export const getUsers = async (
 export const updateDeviceToken = async (
   userId: string,
   token: string,
-): Promise<any> => {
+): Promise<UserService.ResUpdateDeviceToken | null> => {
   const user = await db.user.updateDeviceToken(userId, token);
 
   return user;

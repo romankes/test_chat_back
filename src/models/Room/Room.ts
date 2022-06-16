@@ -16,6 +16,10 @@ const RoomSchema = new Schema(
     admin: {
       type: Schema.Types.ObjectId,
     },
+    avatar: {
+      type: String,
+      default: '',
+    },
   },
   {timestamps: true},
 );

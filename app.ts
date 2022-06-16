@@ -32,7 +32,6 @@ morgan.token('body', (req: any) => {
 });
 
 app.use(morgan(':method :url :body - :response-time ms '));
-// app.use(morgan('tiny'));
 mongoose.connect('mongodb://localhost:27017/chat_test');
 
 app.use('/auth', Routes.auth);
@@ -43,6 +42,11 @@ app.use('/uploads/users/:filename', (req, res) => {
 
   res.sendFile(`${__dirname}\\uploads\\users\\${req.params.filename}`);
 });
+app.use('/uploads/rooms/:filename', (req, res) => {
+  console.log(`${__dirname}\\uploads\\rooms\\${req.params.filename}`);
+
+  res.sendFile(`${__dirname}\\uploads\\rooms\\${req.params.filename}`);
+});
 io.on('connection', (socket) => {
   connectionController.connect(socket);
 
@@ -52,5 +56,3 @@ io.on('connection', (socket) => {
 server.listen(PORT, HOST, () => {
   console.log(`Example app listening at http://${HOST}:${PORT}`);
 });
-
-// io.on('connection', (socket) => chatControllers.connect(socket, io));

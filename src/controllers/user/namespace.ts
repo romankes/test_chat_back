@@ -1,28 +1,28 @@
 import {UserModelTypes} from '@/models';
 
 export namespace User {
-  export type GetUserRes = {
-    user: UserModelTypes.Item;
+  export type Item = UserModelTypes.PublicItem;
+
+  export type GetDetailRes = {
+    user: Item;
   };
 
-  export type UpdateUserBody = {
+  export type UpdateItemBody = {
+    username: string;
+  };
+  export type ResUpdateItem = {user: Item};
+
+  export type UpdateDeviceTokenBody = {
+    token: string;
+  };
+
+  export type GetItemsParams = {
+    page: number;
+    per: number;
     username: string;
   };
 
-  //   export type UpdateUserBody = {
-  //     name: string;
-  //     email: string;
-  //     phone: string;
-  //     password: string;
-  //   };
-  //   export type GetUsersParams = {
-  //     perPage: number;
-  //     page: number;
-  //   };
-
-  //   export type GetUsersRes = {
-  //     page: number;
-  //     totalPage: number;
-  //     users: NUserModel.Item[];
-  //   };
+  export type ResGetItems = {
+    users: Item[];
+  };
 }

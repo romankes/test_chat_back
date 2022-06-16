@@ -1,9 +1,10 @@
 import {UserModelTypes} from '@/models';
 
 export namespace Message {
-  export type CreateMessageBody = {
+  export type Item = {
     text: string;
-    room_id: string;
+    user: User;
+    room: string;
   };
 
   export type User = {
@@ -16,36 +17,19 @@ export namespace Message {
     role: 'user' | 'admin';
   };
 
-  // export type CreateRoomBody = {
-  //   user_ids: string[];
-  //   title: string;
-  //   role: string;
-  // };
+  export type CreateItemBody = {
+    text: string;
+    room_id: string;
+  };
 
-  // export type CreateRoomRes = {
-  //   room: Item | null;
-  // };
-  // {
-  // room: {
-  //   _id: string;
-  //   title: string;
-  //   user: any[];
-  // } | null;
-  // };
-  //   export type UpdateUserBody = {
-  //     name: string;
-  //     email: string;
-  //     phone: string;
-  //     password: string;
-  //   };
-  //   export type GetUsersParams = {
-  //     perPage: number;
-  //     page: number;
-  //   };
+  export type ResCreateItem = {
+    message: Item;
+  };
 
-  //   export type GetUsersRes = {
-  //     page: number;
-  //     totalPage: number;
-  //     users: NUserModel.Item[];
-  //   };
+  export type RemoveItemParams = {
+    id: string;
+  };
+  export type ResRemoveItem = {
+    message: Item;
+  };
 }

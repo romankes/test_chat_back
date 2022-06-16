@@ -1,11 +1,12 @@
+import {sendPush} from '@/helpers/sendPush';
 import {db} from '@/models';
 import {Server} from 'socket.io';
-import {TCreateRoom, TResCreateRoom, TResGetRooms} from './types';
+import {RoomService} from './types';
 
-export const createRoom = async (
-  data: TCreateRoom,
+export const createItem = async (
+  data: RoomService.CreateItem,
   io: Server,
-): Promise<TResCreateRoom> => {
+): Promise<RoomService.ResCreateItem | null> => {
   const usersData = await db.user.findUsers(data.users);
 
   if (usersData.length === data.users.length) {
@@ -23,14 +24,30 @@ export const createRoom = async (
       }),
     );
 
-    usersData.forEach((user) => {
-      if (user.socket_id && user._id.toString() !== room.admin.toString()) {
-        io.to(user.socket_id).emit('create_room', {
-          ...room,
-          users,
-        });
-      }
-    });
+    await Promise.all(
+      usersData.map(async (user) => {
+        if (user.socket_id && user._id.toString() !== room.admin.toString()) {
+          io.to(user.socket_id).emit('CREATE_ROOM', {
+            ...room,
+            users,
+          });
+        }
+
+        if (user._id.toString() !== data.admin && user.deviceToken) {
+          await sendPush(
+            user.deviceToken,
+            {
+              title: room.title,
+              body: 'Chat was created',
+            },
+            {
+              action: 'CREATE_ROOM',
+              roomId: room._id.toString(),
+            },
+          );
+        }
+      }),
+    );
 
     return {
       ...room,
@@ -46,39 +63,44 @@ export const removeRoom = async (
   currentUser: string,
   io: Server,
 ): Promise<string> => {
-  const room = await db.room.getRoom(roomId);
-  const users = await db.room.getAllUsersByRoom(roomId);
+  const room = await db.room.getDetail(roomId);
+  const users = await db.room.getUsersByItem(roomId);
 
   const isAdmin = room.admin === currentUser;
 
   users.forEach((user) => {
     if (user.socket_id && user.socket_io !== currentUser) {
-      io.to(user.socket_io).emit(isAdmin ? 'remove_room' : 'leave_room', {
+      io.to(user.socket_io).emit(isAdmin ? 'REMOVE_ROOM' : 'LEAVE_ROOM', {
         id: roomId,
+        userId: currentUser,
       });
     }
   });
 
-  if (isAdmin) {
-    await db.message.removeAllByRoomId(roomId);
-    await db.room.removeRoom(roomId);
+  const {command} = await db.room.leave(roomId, currentUser);
+
+  if (isAdmin || command === 'remove') {
+    await db.message.removeItemsByRoomId(roomId);
+    await db.room.remove(roomId);
 
     await Promise.all(
       users.map(async ({_id}) => {
-        await db.user.removeRoom(roomId, _id);
+        await db.user.leaveRoom(roomId, _id);
       }),
     );
   } else {
-    await db.room.leaveRoom(roomId, currentUser);
-    await db.user.removeRoom(roomId, currentUser);
+    await db.user.leaveRoom(roomId, currentUser);
   }
 
   return roomId;
 };
 
-export const getRoomDetail = async (roomId: string, userId: string) => {
-  const room = await db.room.getRoom(roomId);
-  const messages = await db.message.getMessagesByRoom(roomId);
+export const getDetail = async (
+  roomId: string,
+  userId: string,
+): Promise<RoomService.ResGetDetail> => {
+  const room = await db.room.getDetail(roomId);
+  const messages = await db.message.getItemsByRoom(roomId);
 
   await db.notReadMessage.read(userId, roomId);
 
@@ -88,21 +110,18 @@ export const getRoomDetail = async (roomId: string, userId: string) => {
   };
 };
 
-export const getRooms = async (
+export const getItems = async (
   page: number = 1,
   per: number = 10,
   userId: string,
-): Promise<TResGetRooms> => {
-  const {rooms, totalPage} = await db.room.getRooms(page, per, userId);
+): Promise<RoomService.ResGetItems> => {
+  const {rooms, totalPage} = await db.room.getItems(page, per, userId);
 
   const fullRooms = await Promise.all(
     rooms.map(async (room: any) => {
-      const message = await db.message.getLastMessageByRoom(room._id);
+      const message = await db.message.getLastItemByRoom(room._id);
 
-      const notRead = await db.notReadMessage.getAllItemByRoom(
-        room._id,
-        userId,
-      );
+      const notRead = await db.notReadMessage.getItemsByRoom(room._id, userId);
 
       return {
         ...room,

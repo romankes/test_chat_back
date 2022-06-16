@@ -1,19 +1,17 @@
 import {messageController} from '@/controllers';
+import {CurrentUser} from '@/types';
 import {Router, Request, Response} from 'express';
 import {Server} from 'socket.io';
 
 export const message = (io: Server) => {
   const message = Router();
 
-  // console.log(io.sockets);
-
-  message.post('/', (req, res: any) =>
-    messageController.createMessage(req, res, io),
+  message.post('/', (req, res: Response<{}, CurrentUser>) =>
+    messageController.createItem(req, res, io),
   );
-  // chat.get('/online', userControllers.getOnlineUsers);
-  // user.delete('/', userControllers.removeUser);
-  // user.put('/', userControllers.updateUser);
-  // user.patch('/', userControllers.updateUser);
+  message.delete('/:id', (req, res: Response<{}, CurrentUser>) =>
+    messageController.removeItem(req, res, io),
+  );
 
   return message;
 };

@@ -1,27 +1,25 @@
-import {saveDocument} from '@/helpers';
-import {UserModelTypes, UserModel, RoomModel, MessageModel} from '@/models';
-
 import {Request, Response} from 'express';
 import {Server} from 'socket.io';
 import {Room} from './namespace';
 
 import {roomService} from '@/services';
-//Room.CreateRoomRes
+import {CurrentUser} from '@/types';
 
-export const createRoom = async (
-  req: Request<{}, {}, Room.CreateRoomBody>,
-  res: Response,
+export const createItem = async (
+  req: Request<{}, {}, Room.CreateItemBody>,
+  res: Response<Room.ResCreateItem, CurrentUser>,
   io: Server,
 ) => {
   try {
     const {users, title} = req.body;
     const {user} = res.locals;
 
-    const room = await roomService.createRoom(
+    const room = await roomService.createItem(
       {
         admin: user._id,
         title: title,
         users: users,
+        avatar: req.file.path.replace(/^\/\//g, '/'),
       },
       io,
     );
@@ -37,33 +35,32 @@ export const createRoom = async (
     res.sendStatus(422);
   }
 };
-export const getRooms = async (
+export const getItems = async (
   req: Request,
-  res: Response<{}, {user: UserModelTypes.Item}>,
+  res: Response<Room.ResGetItems, CurrentUser>,
 ) => {
   try {
     const {user} = res.locals;
 
-    //TODO: add ts
     const {page = 1, per = 10} = req.query;
 
-    const rooms = await roomService.getRooms(+page, +per, user._id);
+    const result = await roomService.getItems(+page, +per, user._id);
 
-    res.json(rooms);
+    res.json(result);
   } catch (e) {
     console.log(`error get rooms ${e}`);
   }
 };
 
-export const getRoom = async (
-  req: Request<Room.GetRoomParams>,
-  res: Response,
+export const getDetail = async (
+  req: Request<Room.GetDetailParams>,
+  res: Response<Room.ResGetDetail, CurrentUser>,
 ) => {
   try {
     const {id} = req.params;
     const {user} = res.locals;
 
-    const {room, messages} = await roomService.getRoomDetail(id, user._id);
+    const {room, messages} = await roomService.getDetail(id, user._id);
 
     if (room) {
       res.json({
@@ -78,9 +75,9 @@ export const getRoom = async (
   }
 };
 
-export const removeRoom = async (
-  req: Request,
-  res: Response,
+export const removeItem = async (
+  req: Request<Room.RemoveItemParams>,
+  res: Response<{}, CurrentUser>,
   io: Server,
 ): Promise<void> => {
   try {

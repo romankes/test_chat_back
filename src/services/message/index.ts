@@ -1,24 +1,22 @@
 import {sendPush} from '@/helpers/sendPush';
 import {db} from '@/models';
 import {Server} from 'socket.io';
-import {TCreateMessageData} from './types';
+import {MessageService} from './types';
 
 export const createMessage = async (
-  data: TCreateMessageData,
+  data: MessageService.CreateMessageData,
   io: Server,
-): Promise<any> => {
-  const room = await db.room.getRoom(data.room);
+): Promise<MessageService.Item | null> => {
+  const room = await db.room.getDetail(data.room);
   if (room) {
     const message = await db.message.create(data);
 
-    const users = await db.room.getAllUsersByRoom(data.room);
+    const users = await db.room.getUsersByItem(data.room);
 
     await Promise.all(
       users.map(async ({_id, socket_id, deviceToken}) => {
         if (!_id.equals(data.user) && socket_id) {
-          console.log(socket_id);
-
-          io.to(socket_id).emit('create_message', message);
+          io.to(socket_id).emit('CREATE_MESSAGE', message);
         }
 
         if (!_id.equals(data.user) && deviceToken) {
@@ -45,6 +43,34 @@ export const createMessage = async (
       .map(({_id}) => _id);
 
     await db.notReadMessage.create(usersNotRead, data.room, message._id);
+
+    return message;
+  }
+
+  return null;
+};
+
+export const removeItem = async (
+  id: string,
+  currentUser: string,
+  io: Server,
+): Promise<MessageService.Item | null> => {
+  const message = await db.message.getItemById(id);
+
+  if (message && message.user.equals(currentUser)) {
+    const users = await db.room.getUsersByItem(message.room);
+
+    await db.message.remove(id);
+    await db.notReadMessage.remove(id);
+
+    users.forEach(({socket_id, _id}) => {
+      if (socket_id && _id !== currentUser) {
+        io.to(socket_id).emit('REMOVE_MESSAGE', {
+          roomId: message.room,
+          id: message._id,
+        });
+      }
+    });
 
     return message;
   }

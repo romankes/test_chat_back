@@ -1,9 +1,10 @@
 import {NotReadMessageModel} from './NotReadMessage';
+import {NotReadMessageModelTypes} from './types';
 
-export const getAllItemByRoom = async (
+export const getItemsByRoom = async (
   roomId: string,
   userId: string,
-): Promise<any> => {
+): Promise<NotReadMessageModelTypes.Item[]> => {
   const messages = await NotReadMessageModel.find({
     room: roomId,
     users: {$in: userId},
@@ -16,7 +17,7 @@ export const create = async (
   users: string[],
   room: string,
   message: string,
-): Promise<any> => {
+): Promise<NotReadMessageModelTypes.Item> => {
   const doc = new NotReadMessageModel({
     users,
     room,
@@ -28,7 +29,10 @@ export const create = async (
   return doc;
 };
 
-export const read = async (user: string, room: string): Promise<any> => {
+export const read = async (
+  user: string,
+  room: string,
+): Promise<NotReadMessageModelTypes.Item[]> => {
   const docs = await NotReadMessageModel.find({room, users: {$in: user}});
   const messages = await Promise.all(
     docs.map(async (doc) => {
@@ -54,4 +58,12 @@ export const read = async (user: string, room: string): Promise<any> => {
   );
 
   return messages;
+};
+
+export const remove = async (
+  id: string,
+): Promise<NotReadMessageModelTypes.Item> => {
+  const message = await NotReadMessageModel.findByIdAndRemove(id);
+
+  return message;
 };
