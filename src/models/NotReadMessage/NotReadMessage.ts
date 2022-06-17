@@ -23,7 +23,7 @@ const NotReadMessageSchema = new Schema(
   {timestamps: true},
 );
 NotReadMessageSchema.plugin(mongoosePaginate);
-export const NotReadMessageModel = model<NotReadMessageModelTypes.Item>(
+export const NotReadMessageModel = model<NotReadMessageModelTypes.Model>(
   'NotReadMessage',
   NotReadMessageSchema,
 );

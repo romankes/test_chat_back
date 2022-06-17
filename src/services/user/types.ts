@@ -5,7 +5,7 @@ export namespace UserService {
 
   export type UpdateItem = {
     email?: string;
-    username?: string;
+    name?: string;
     avatar?: string;
   };
 
@@ -13,7 +13,7 @@ export namespace UserService {
   export type ResUpdateDeviceToken = Item;
 
   export type ResGetItems = {
-    users: Item[];
+    items: Item[];
     totalPage: number;
   };
 }

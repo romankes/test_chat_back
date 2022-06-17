@@ -13,11 +13,11 @@ export const updateItem = async (
 export const getItems = async (
   page: number,
   per: number,
-  username: string,
+  name: string,
 ): Promise<UserService.ResGetItems> => {
-  const {users, totalPage} = await db.user.getItemsByName(username, page, per);
+  const {items, totalPage} = await db.user.getItemsByName(name, page, per);
 
-  return {users, totalPage};
+  return {items, totalPage};
 };
 
 export const updateDeviceToken = async (

@@ -1,3 +1,4 @@
+import {messageBuilder} from '@/builders';
 import {messageService} from '@/services';
 import {CurrentUser} from '@/types';
 import {Request, Response} from 'express';
@@ -24,7 +25,7 @@ export const createItem = async (
     );
 
     if (message) {
-      res.json({message});
+      res.json({message: messageBuilder(message)});
     } else {
       res.sendStatus(422);
     }
@@ -45,7 +46,7 @@ export const removeItem = async (
     const message = await messageService.removeItem(id, user._id, io);
 
     if (message) {
-      res.json({message});
+      res.json({message: id});
     } else {
       res.sendStatus(422);
     }

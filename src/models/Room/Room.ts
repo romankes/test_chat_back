@@ -24,4 +24,4 @@ const RoomSchema = new Schema(
   {timestamps: true},
 );
 RoomSchema.plugin(mongoosePaginate);
-export const RoomModel = model<RoomModelTypes.Item>('Room', RoomSchema);
+export const RoomModel = model<RoomModelTypes.Model>('Room', RoomSchema);

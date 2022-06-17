@@ -1,12 +1,12 @@
 export namespace UserModelTypes {
-  export type Item = {
+  export type Model = {
     email: string;
-    username: string;
+    name: string;
     _id: string;
     avatar: string;
     online: boolean;
     token: string;
-    socket_id: string;
+    socketId: string;
     password: string;
     updatedAt: string;
 
@@ -16,36 +16,26 @@ export namespace UserModelTypes {
     deviceToken: string;
   };
 
+  export type ItemPayload = {
+    email?: string;
+    name?: string;
+    avatar?: string;
+  };
+
   export type PublicItem = {
     email: string;
-    username: string;
+    name: string;
     _id: string;
     avatar: string;
     online: boolean;
     updatedAt: string;
 
+    socketId: string;
     deviceToken: string;
-    socket_id: string;
-  };
-
-  export type UpdatePayload = {
-    email?: string;
-    username?: string;
-    avatar?: string;
-    online?: boolean;
-    token?: string;
-    socket_id?: string;
-    password?: string;
-    rooms?: string[];
-  };
-
-  export type CreatePayload = {
-    email: string;
-    password: string;
   };
 
   export type ResGetItems = {
-    users: PublicItem[];
+    items: PublicItem[];
     totalPage: number;
   };
 }

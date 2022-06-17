@@ -1,5 +1,5 @@
 export namespace RoomModelTypes {
-  export type Item = {
+  export type Model = {
     title: string;
     _id: string;
     admin: string;
@@ -7,10 +7,11 @@ export namespace RoomModelTypes {
     avatar: string;
   };
 
-  export type CreatePayload = {
+  export type PublicItem = {
+    _id: string;
     title: string;
+    users: User[];
     admin: string;
-    users: string[];
     avatar: string;
   };
 
@@ -22,14 +23,26 @@ export namespace RoomModelTypes {
     updatedAt: string;
     avatar: string;
     role: 'user' | 'admin';
-    socket_id: string;
+    socketId: string;
     deviceToken: string;
+
+    currentRoom: string;
   };
 
-  export type PublicItem = {
-    _id: string;
+  export type CreatePayload = {
     title: string;
-    users: User[];
     admin: string;
+    users: string[];
+    avatar?: string;
+  };
+
+  export type ResGetItems = {
+    totalPage: number;
+    items: PublicItem[];
+  };
+
+  export type ResLeave = {
+    room: Model;
+    command: 'remove' | 'leave';
   };
 }

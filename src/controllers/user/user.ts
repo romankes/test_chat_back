@@ -3,6 +3,7 @@ import {User} from './namespace';
 
 import {userService} from '@/services';
 import {CurrentUser} from '@/types';
+import {userBuilded} from '@/builders';
 
 export const getDetail = (
   req: Request,
@@ -12,7 +13,7 @@ export const getDetail = (
     const {user} = res.locals;
 
     if (user) {
-      res.send({user});
+      res.send({user: userBuilded(user)});
     } else {
       res.sendStatus(422);
     }
@@ -27,20 +28,20 @@ export const updateItem = async (
   res: Response<User.ResUpdateItem, CurrentUser>,
 ) => {
   try {
-    const {username = ''} = req.body;
+    const {name = ''} = req.body;
 
     const {user: currentUser} = res.locals;
 
     const user = await userService.updateItem(
       {
-        username,
+        name,
         avatar: req.file.path.replace(/^\/\//g, '/'),
       },
       currentUser._id,
     );
 
     if (user) {
-      res.json({user});
+      res.json({user: userBuilded(user)});
     } else {
       res.sendStatus(422);
     }
@@ -55,11 +56,18 @@ export const getUsers = async (
   res: Response<User.ResGetItems>,
 ) => {
   try {
-    const {username, page, per} = req.query;
+    const {name, page, per} = req.query;
 
-    const result = await userService.getItems(+page, +per, username as string);
+    const {totalPage, items} = await userService.getItems(
+      +page,
+      +per,
+      name as string,
+    );
 
-    res.json(result);
+    res.json({
+      users: items.map(userBuilded),
+      totalPage,
+    });
   } catch (e) {
     console.log(`error get users ${e}`);
     res.sendStatus(422);

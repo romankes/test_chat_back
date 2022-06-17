@@ -12,10 +12,10 @@ export namespace RoomService {
 
   export type ResCreateItem = Item;
 
-  export type ResGetItems = {rooms: Item[]; totalPage: number};
+  export type ResGetItems = {items: Item[]; totalPage: number};
 
   export type ResGetDetail = {
-    room: Item;
+    item: Item;
     messages: MessageModelTypes.PublicItem[];
   };
 }

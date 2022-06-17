@@ -4,6 +4,7 @@ import {Room} from './namespace';
 
 import {roomService} from '@/services';
 import {CurrentUser} from '@/types';
+import {messageBuilder, roomBuilder} from '@/builders';
 
 export const createItem = async (
   req: Request<{}, {}, Room.CreateItemBody>,
@@ -25,7 +26,7 @@ export const createItem = async (
     );
 
     if (room) {
-      res.send({room});
+      res.send({room: roomBuilder(room)});
     } else {
       res.sendStatus(422);
     }
@@ -44,9 +45,16 @@ export const getItems = async (
 
     const {page = 1, per = 10} = req.query;
 
-    const result = await roomService.getItems(+page, +per, user._id);
+    const {items, totalPage} = await roomService.getItems(
+      +page,
+      +per,
+      user._id,
+    );
 
-    res.json(result);
+    res.json({
+      rooms: items.map(roomBuilder),
+      totalPage,
+    });
   } catch (e) {
     console.log(`error get rooms ${e}`);
   }
@@ -60,12 +68,12 @@ export const getDetail = async (
     const {id} = req.params;
     const {user} = res.locals;
 
-    const {room, messages} = await roomService.getDetail(id, user._id);
+    const {item, messages} = await roomService.getDetail(id, user._id);
 
-    if (room) {
+    if (item) {
       res.json({
-        room,
-        messages,
+        room: roomBuilder(item),
+        messages: messages.map(messageBuilder),
       });
     } else {
       res.sendStatus(422);

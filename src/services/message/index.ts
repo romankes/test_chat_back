@@ -14,12 +14,12 @@ export const createMessage = async (
     const users = await db.room.getUsersByItem(data.room);
 
     await Promise.all(
-      users.map(async ({_id, socket_id, deviceToken}) => {
-        if (!_id.equals(data.user) && socket_id) {
-          io.to(socket_id).emit('CREATE_MESSAGE', message);
+      users.map(async ({_id, socketId, deviceToken}) => {
+        if (_id.toString() === data.user.toString() && socketId) {
+          io.to(socketId).emit('CREATE_MESSAGE', message);
         }
 
-        if (!_id.equals(data.user) && deviceToken) {
+        if (_id.toString() === data.user.toString() && deviceToken) {
           await sendPush(
             deviceToken,
             {
@@ -54,25 +54,25 @@ export const removeItem = async (
   id: string,
   currentUser: string,
   io: Server,
-): Promise<MessageService.Item | null> => {
+): Promise<string | null> => {
   const message = await db.message.getItemById(id);
 
-  if (message && message.user.equals(currentUser)) {
+  if (message && message.user.toString() === currentUser) {
     const users = await db.room.getUsersByItem(message.room);
 
     await db.message.remove(id);
     await db.notReadMessage.remove(id);
 
-    users.forEach(({socket_id, _id}) => {
-      if (socket_id && _id !== currentUser) {
-        io.to(socket_id).emit('REMOVE_MESSAGE', {
+    users.forEach(({socketId, _id}) => {
+      if (socketId && _id !== currentUser) {
+        io.to(socketId).emit('REMOVE_MESSAGE', {
           roomId: message.room,
           id: message._id,
         });
       }
     });
 
-    return message;
+    return id;
   }
 
   return null;

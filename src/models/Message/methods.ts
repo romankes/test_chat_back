@@ -6,7 +6,7 @@ export const getItemsByRoom = async (
 ): Promise<MessageModelTypes.PublicItem[]> => {
   const messages = (await MessageModel.find({room: roomId}, '-room').populate(
     'user',
-    '-rooms -token -password -socket_id -__v -createdAt -currentRoom -deviceToken',
+    'name _id email online updatedAt avatar socketId deviceToken',
   )) as MessageModelTypes.PublicItem[];
 
   return messages;
@@ -21,13 +21,11 @@ export const removeItemsByRoomId = async (roomId: string): Promise<string> => {
 export const getLastItemByRoom = async (
   roomId: string,
 ): Promise<MessageModelTypes.PublicItem> => {
-  const message = (await MessageModel.findOne(
-    {room: roomId},
-    {},
-    {sort: {created_at: -1}},
-  ).populate(
+  const message = (await MessageModel.findOne({room: roomId}, '-room', {
+    sort: {created_at: -1},
+  }).populate(
     'user',
-    '-rooms -token -password -socket_id -__v -createdAt -currentRoom -deviceToken',
+    'name _id email online updatedAt avatar socketId deviceToken',
   )) as MessageModelTypes.PublicItem;
 
   return message;
@@ -42,13 +40,13 @@ export const create = async (
 
   const message = (await doc.populate(
     'user',
-    '-rooms -token -password -socket_id -__v -createdAt -currentRoom -deviceToken',
+    'name _id email online updatedAt avatar socketId deviceToken',
   )) as MessageModelTypes.PublicItem;
 
   return message;
 };
 
-export const remove = async (id: string): Promise<MessageModelTypes.Item> => {
+export const remove = async (id: string): Promise<MessageModelTypes.Model> => {
   const message = await MessageModel.findByIdAndRemove(id);
 
   return message;
@@ -56,7 +54,7 @@ export const remove = async (id: string): Promise<MessageModelTypes.Item> => {
 
 export const getItemById = async (
   id: string,
-): Promise<MessageModelTypes.Item> => {
+): Promise<MessageModelTypes.Model> => {
   const message = await MessageModel.findById(id);
 
   return message;

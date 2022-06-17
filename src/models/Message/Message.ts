@@ -15,7 +15,7 @@ const MessageSchema = new Schema(
   {timestamps: true},
 );
 MessageSchema.plugin(mongoosePaginate);
-export const MessageModel = model<MessageModelTypes.Item>(
+export const MessageModel = model<MessageModelTypes.Model>(
   'Message',
   MessageSchema,
 );

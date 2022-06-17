@@ -1,8 +1,8 @@
+import {TRoomBuilder} from './../../builders/room';
 import {MessageModelTypes, RoomModelTypes, UserModelTypes} from '@/models';
+import {TMessageBuilder} from '@/builders';
 
 export namespace Room {
-  export type Item = RoomModelTypes.PublicItem;
-
   export type CreateItemBody = {
     users: string[];
     title: string;
@@ -10,23 +10,23 @@ export namespace Room {
   };
 
   export type ResCreateItem = {
-    room: Item;
+    room: TRoomBuilder;
   };
 
   export type CreateItemRes = {
-    room: Item | null;
+    room: TRoomBuilder | null;
   };
 
   export type GetDetailParams = {
     id: string;
   };
   export type ResGetDetail = {
-    room: Item;
-    messages: MessageModelTypes.PublicItem[];
+    room: TRoomBuilder;
+    messages: TMessageBuilder[];
   };
 
   export type ResGetItems = {
-    rooms: Item[];
+    rooms: TRoomBuilder[];
     totalPage: number;
   };
 

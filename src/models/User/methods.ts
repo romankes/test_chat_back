@@ -2,8 +2,8 @@ import {UserModelTypes} from './types';
 import {UserModel} from './User';
 
 export const create = async (
-  data: UserModelTypes.CreatePayload,
-): Promise<UserModelTypes.Item> => {
+  data: UserModelTypes.ItemPayload,
+): Promise<UserModelTypes.Model> => {
   const user = new UserModel(data);
 
   await user.save();
@@ -13,22 +13,20 @@ export const create = async (
 
 export const update = async (
   id: string,
-  data: UserModelTypes.UpdatePayload,
-): Promise<UserModelTypes.PublicItem> => {
+  data: UserModelTypes.ItemPayload,
+): Promise<UserModelTypes.Model> => {
   const user = await UserModel.findByIdAndUpdate(id, data);
 
   return user.toJSON();
 };
 
-export const remove = async (
-  id: string,
-): Promise<UserModelTypes.PublicItem> => {
+export const remove = async (id: string): Promise<UserModelTypes.Model> => {
   const user = await UserModel.findByIdAndRemove(id);
 
   return user;
 };
 
-export const exist = async (email: string): Promise<UserModelTypes.Item> => {
+export const exist = async (email: string): Promise<UserModelTypes.Model> => {
   const user = await UserModel.findOne({email});
 
   return user.toJSON();
@@ -37,9 +35,11 @@ export const exist = async (email: string): Promise<UserModelTypes.Item> => {
 export const findUsers = async (
   ids: string[],
 ): Promise<UserModelTypes.PublicItem[]> => {
+  //TODO: check
+
   const docs = await UserModel.find(
     {_id: ids},
-    '-rooms -token -password -__v -createdAt',
+    'avatar email name online updatedAt _id socketId deviceToken',
   );
 
   const users = docs.map((doc) => doc.toJSON());
@@ -50,22 +50,22 @@ export const findUsers = async (
 export const updateRooms = async (
   id: string,
   room: string[],
-): Promise<UserModelTypes.PublicItem> => {
+): Promise<UserModelTypes.Model> => {
   const user = await UserModel.findByIdAndUpdate(id, {$push: {rooms: room}});
 
   return user.toJSON();
 };
 
 export const getItemsByName = async (
-  username: string,
+  name: string,
   page: number,
   per: number,
 ): Promise<UserModelTypes.ResGetItems> => {
-  const users = await UserModel.find(
+  const items = await UserModel.find(
     {
-      username: {$regex: username, $options: 'i'},
+      name: {$regex: name, $options: 'i'},
     },
-    '-rooms -token -password -__v -createdAt',
+    'avatar email name online updatedAt _id',
     {skip: (page - 1) * per, limit: per},
   );
 
@@ -73,7 +73,7 @@ export const getItemsByName = async (
 
   return {
     totalPage: Math.ceil(totalCount / per),
-    users: users.map((users) => users.toJSON()),
+    items: items.map((item) => item.toJSON()),
   };
 };
 
@@ -94,7 +94,7 @@ export const updateDeviceToken = async (
 ): Promise<UserModelTypes.PublicItem> => {
   const user = await UserModel.findByIdAndUpdate(userId, {
     deviceToken: token,
-  }).select('email username _id avatar  online updatedAt');
+  }).select('avatar email name online updatedAt _id');
 
   return user.toJSON();
 };
@@ -106,7 +106,7 @@ export const updateStatus = async (
 ): Promise<UserModelTypes.PublicItem> => {
   const user = await UserModel.findOneAndUpdate(
     {token},
-    {socket_id: id, online},
+    {socketId: id, online},
   );
 
   return user.toJSON();

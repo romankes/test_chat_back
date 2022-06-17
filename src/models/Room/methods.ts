@@ -3,7 +3,7 @@ import {RoomModel} from './Room';
 
 export const create = async (
   data: RoomModelTypes.CreatePayload,
-): Promise<RoomModelTypes.Item> => {
+): Promise<RoomModelTypes.Model> => {
   const room = new RoomModel(data);
 
   await room.save();
@@ -11,15 +11,20 @@ export const create = async (
   return room.toJSON();
 };
 
-export const getUsersByItem = async (id: string): Promise<any[]> => {
+export const getUsersByItem = async (
+  id: string,
+): Promise<RoomModelTypes.User[]> => {
   const doc = await RoomModel.findById(id);
 
-  const room = await doc.populate(
+  const room: RoomModelTypes.PublicItem = await doc.populate(
     'users',
-    '-rooms -token -password -__v -createdAt',
+    'name _id email online updatedAt avatar socketId deviceToken currentRoom',
   );
 
-  return room.users;
+  return room.users.map((user) => ({
+    ...user,
+    role: room.admin.toString() === user._id.toString() ? 'admin' : 'user',
+  }));
 };
 
 export const exists = async (_id: string): Promise<boolean> => {
@@ -34,12 +39,14 @@ export const remove = async (id: string): Promise<string> => {
   return id;
 };
 
-export const getDetail = async (id: string): Promise<any> => {
+export const getDetail = async (
+  id: string,
+): Promise<RoomModelTypes.PublicItem> => {
   const doc = await RoomModel.findById(id);
 
-  const room = await doc.populate(
+  const room: RoomModelTypes.PublicItem = await doc.populate(
     'users',
-    '-rooms -token -password -__v -createdAt -socket_id -currentRoom -deviceToken',
+    'name _id email online updatedAt avatar socketId deviceToken',
   );
 
   return room;
@@ -49,24 +56,27 @@ export const getItems = async (
   page: number,
   per: number,
   userId: string,
-): Promise<any> => {
-  const rooms = await RoomModel.find(
+): Promise<RoomModelTypes.ResGetItems> => {
+  const rooms: RoomModelTypes.PublicItem[] = await RoomModel.find(
     {users: {$in: userId}},
     {},
     {skip: (page - 1) * per, limit: per},
   ).populate(
     'users',
-    '-rooms -token -password -__v -createdAt -socket_id -currentRoom -deviceToken',
+    'name _id email online updatedAt avatar socketId deviceToken',
   );
   const totalCount = await RoomModel.countDocuments();
 
   return {
     totalPage: Math.ceil(totalCount / per),
-    rooms: rooms.map((room) => room.toJSON()),
+    items: rooms,
   };
 };
 
-export const leave = async (roomId: string, user: string): Promise<any> => {
+export const leave = async (
+  roomId: string,
+  user: string,
+): Promise<RoomModelTypes.ResLeave> => {
   const doc = await RoomModel.findByIdAndUpdate(roomId, {
     $pull: {users: user},
   });

@@ -1,5 +1,5 @@
 export namespace NotReadMessageModelTypes {
-  export type Item = {
+  export type Model = {
     users: string[];
     room: string;
     message: string;

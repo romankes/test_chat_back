@@ -18,7 +18,7 @@ export const createItem = async (
 
         await db.user.updateRooms(user._id, [room._id]);
 
-        delete obj['socket_id'];
+        delete obj['socketId'];
 
         return obj;
       }),
@@ -26,8 +26,8 @@ export const createItem = async (
 
     await Promise.all(
       usersData.map(async (user) => {
-        if (user.socket_id && user._id.toString() !== room.admin.toString()) {
-          io.to(user.socket_id).emit('CREATE_ROOM', {
+        if (user.socketId && user._id.toString() !== room.admin.toString()) {
+          io.to(user.socketId).emit('CREATE_ROOM', {
             ...room,
             users,
           });
@@ -69,8 +69,8 @@ export const removeRoom = async (
   const isAdmin = room.admin === currentUser;
 
   users.forEach((user) => {
-    if (user.socket_id && user.socket_io !== currentUser) {
-      io.to(user.socket_io).emit(isAdmin ? 'REMOVE_ROOM' : 'LEAVE_ROOM', {
+    if (user.socketId && user.socketId !== currentUser) {
+      io.to(user.socketId).emit(isAdmin ? 'REMOVE_ROOM' : 'LEAVE_ROOM', {
         id: roomId,
         userId: currentUser,
       });
@@ -105,7 +105,7 @@ export const getDetail = async (
   await db.notReadMessage.read(userId, roomId);
 
   return {
-    room: room.toJSON(),
+    item: room,
     messages,
   };
 };
@@ -115,10 +115,10 @@ export const getItems = async (
   per: number = 10,
   userId: string,
 ): Promise<RoomService.ResGetItems> => {
-  const {rooms, totalPage} = await db.room.getItems(page, per, userId);
+  const {items, totalPage} = await db.room.getItems(page, per, userId);
 
   const fullRooms = await Promise.all(
-    rooms.map(async (room: any) => {
+    items.map(async (room: any) => {
       const message = await db.message.getLastItemByRoom(room._id);
 
       const notRead = await db.notReadMessage.getItemsByRoom(room._id, userId);
@@ -132,7 +132,7 @@ export const getItems = async (
   );
 
   return {
-    rooms: fullRooms.sort((cur, next) => {
+    items: fullRooms.sort((cur, next) => {
       return (
         new Date(next.message?.createdAt || next.createdAt).getMilliseconds() -
         new Date(cur.message?.createdAt || cur.createdAt).getMilliseconds()

@@ -1,16 +1,14 @@
-import {UserModelTypes} from '@/models';
+import {TUserBuilder} from '@/builders';
 
 export namespace User {
-  export type Item = UserModelTypes.PublicItem;
-
   export type GetDetailRes = {
-    user: Item;
+    user: TUserBuilder;
   };
 
   export type UpdateItemBody = {
-    username: string;
+    name: string;
   };
-  export type ResUpdateItem = {user: Item};
+  export type ResUpdateItem = {user: TUserBuilder};
 
   export type UpdateDeviceTokenBody = {
     token: string;
@@ -19,10 +17,11 @@ export namespace User {
   export type GetItemsParams = {
     page: number;
     per: number;
-    username: string;
+    name: string;
   };
 
   export type ResGetItems = {
-    users: Item[];
+    users: TUserBuilder[];
+    totalPage: number;
   };
 }

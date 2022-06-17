@@ -3,7 +3,7 @@ import mongoosePaginate from 'mongoose-paginate';
 import {UserModelTypes} from './types';
 const UserSchema = new Schema(
   {
-    username: {
+    name: {
       type: String,
       default: '',
     },
@@ -27,7 +27,7 @@ const UserSchema = new Schema(
       type: String,
       default: '',
     },
-    socket_id: {
+    socketId: {
       type: String,
       default: '',
     },
@@ -49,4 +49,4 @@ const UserSchema = new Schema(
   {timestamps: true},
 );
 UserSchema.plugin(mongoosePaginate);
-export const UserModel = model<UserModelTypes.Item>('User', UserSchema);
+export const UserModel = model<UserModelTypes.Model>('User', UserSchema);
