@@ -1,1 +1,1 @@
-export * from './room';
+export {roomRoutes} from './routes';

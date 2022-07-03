@@ -1,1 +1,1 @@
-export * from './message';
+export {messageRoutes} from './routes';

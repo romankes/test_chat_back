@@ -1,13 +1,7 @@
-export type TSignIn = {
+type TBasePayload = {
   email: string;
   password: string;
 };
 
-export type TResSignIn = string;
-
-export type TSignUp = {
-  email: string;
-  password: string;
-};
-
-export type TResSignUp = string;
+export type TSignInPayload = TBasePayload;
+export type TSignUpPayload = TBasePayload;

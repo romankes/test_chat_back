@@ -1,1 +1,1 @@
-export * as roomController from './room';
+export * as roomController from './controller';

@@ -1,13 +1,6 @@
-import {UserModelTypes} from '@/models';
-
-export type CurrentUser = {user: UserModelTypes.Model};
-
-export type UserForRes = {
-  _id: string;
-  email: string;
-  name: string;
-  avatar: string;
-  online: boolean;
-  updatedAt: string;
-  role: 'user' | 'admin';
-};
+export type {Auth} from './Auth';
+export type {App} from './App';
+export type {Room} from './Room';
+export type {Message} from './Message';
+export type {User} from './User';
+export type {Connection} from './Connection';

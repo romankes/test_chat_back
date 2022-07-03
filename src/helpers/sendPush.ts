@@ -13,7 +13,12 @@ type TMessage = {
 };
 
 export type TData = {
-  action: 'CREATE_MESSAGE' | 'CREATE_ROOM';
+  action:
+    | 'CREATE_MESSAGE'
+    | 'CREATE_ROOM'
+    | 'REMOVE_USER'
+    | 'LEAVE_USER'
+    | 'REMOVE_ROOM';
   [key: string]: any;
 };
 

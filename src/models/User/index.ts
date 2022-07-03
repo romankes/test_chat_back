@@ -1,3 +1,2 @@
-export type {UserModelTypes} from './types';
-export {UserModel} from './User';
-export * as userMethods from './methods';
+export {UserModel} from './Model';
+export type {TUser} from './types';

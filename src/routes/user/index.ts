@@ -1,1 +1,1 @@
-export {user} from './user';
+export {userRoutes} from './routes';

@@ -1,1 +1,1 @@
-export * as connectionController from './connection';
+export * as connectionController from './controller';

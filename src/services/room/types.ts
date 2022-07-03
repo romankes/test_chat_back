@@ -1,21 +1,31 @@
-import {MessageModelTypes, RoomModelTypes, UserModelTypes} from '@/models';
+import {App, Message, Room} from '@/types';
+import {Server} from 'socket.io';
 
-export namespace RoomService {
-  export type Item = RoomModelTypes.PublicItem;
+export type TCratePayload = {
+  io: Server;
+  data: Room.CreateBody;
+  currentUser: App.Id;
+};
 
-  export type CreateItem = {
-    title: string;
-    users: string[];
-    admin: string;
-    avatar: string;
-  };
+export type TListPayload = Room.ListParams & {
+  userId: App.Id;
+};
 
-  export type ResCreateItem = Item;
+export type Room = Room.ListBuilder & {
+  message: Message.ListBuilder | null;
+};
 
-  export type ResGetItems = {items: Item[]; totalPage: number};
+export type TListReturn = {
+  totalCount: number;
+  rooms: Room[];
+};
 
-  export type ResGetDetail = {
-    item: Item;
-    messages: MessageModelTypes.PublicItem[];
-  };
-}
+export type TShowReturn = Room.ShowBuilder & {
+  messages: Message.ListBuilder[];
+};
+
+export type TRemoveParams = {
+  io: Server;
+  id: App.Id;
+  initiator: App.Id;
+};
