@@ -11,6 +11,8 @@ export const auth = async (
   try {
     const token = req.signedCookies['auth'];
 
+    console.log(token);
+
     if (!token) {
       return handleError(res, errors.unauthorized());
     }

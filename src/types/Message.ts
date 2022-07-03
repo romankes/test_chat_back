@@ -15,7 +15,7 @@ export namespace Message {
     _id: string;
     notRead: App.Id[];
     text: string;
-    room: string;
+    room: App.Id;
     user: User.ShowBuilder;
     updatedAt: string;
   };

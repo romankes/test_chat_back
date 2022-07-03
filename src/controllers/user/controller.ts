@@ -51,11 +51,13 @@ export const list = async (
   res: App.BaseResponse,
 ) => {
   try {
-    const result = userService.list(req.query);
+    const result = await userService.list(req.query);
 
-    if (result) {
+    if (!result) {
       return handleError(res, errors.paramsIsInvalid());
     }
+
+    console.log(result);
 
     res.json(result);
   } catch (e) {

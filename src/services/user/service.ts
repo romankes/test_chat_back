@@ -76,7 +76,7 @@ export const remove = async ({
 export const list = async ({
   page,
   per,
-  name,
+  name = '',
 }: TParamsList): Promise<TReturnList | null> => {
   try {
     const docs = await UserModel.find(

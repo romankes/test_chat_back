@@ -25,6 +25,7 @@ export const connect = async (socket: Socket): Promise<void> => {
     const client = await connectionService.connect(socket);
 
     if (client) {
+      logger.info(`New client ${JSON.stringify(client?.user || {})}`);
       client.socket.on('disconnect', disconnect(client));
     }
   } catch (e) {

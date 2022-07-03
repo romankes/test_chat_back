@@ -6,17 +6,33 @@ import {TUser, UserModel} from '@/models';
 import {TConnectReturn, TDisconnectReturn} from './types';
 import {Connection} from '@/types';
 
+import {parse} from 'cookie';
+import {JSONCookies} from 'cookie-parser';
+
 export const connect = async (
   socket: Socket,
 ): Promise<TConnectReturn | null> => {
   try {
-    const token = socket.request.headers.cookie;
+    //@ts-ignore
+    const {auth: token} = parse(socket.request.headers.cookie, {});
 
     if (!token) {
       socket.disconnect();
       return null;
     }
-    const data = (await jwt.decode(token)) as {_id: string};
+
+    const length = token.split('.').length;
+    const actual = token
+      .replace(/s:/g, '')
+      .split('.')
+      .slice(0, length - 1)
+      .join('.');
+    logger.warn(actual);
+
+    const data = (await jwt.decode(actual)) as {_id: string};
+
+    logger.warn(data);
+
     if (data) {
       const user = await UserModel.findByIdAndUpdate(data._id, {
         online: true,

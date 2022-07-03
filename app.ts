@@ -15,16 +15,15 @@ import {Server} from 'socket.io';
 import {createServer} from 'http';
 import logger from 'jet-logger';
 import cookieParser from 'cookie-parser';
+
 import {auth} from '@/middleware';
 import {connectionController} from '@/controllers';
 
 const PORT = 3001;
-const HOST = '192.168.0.104';
+const HOST = '192.168.0.106';
 
 const app = express();
 const server = createServer(app);
-
-const io = new Server(server);
 
 app.use(cors());
 app.use(express.json());
@@ -38,6 +37,15 @@ morgan.token('body', (req: any) => {
 
 app.use(morgan(':method :url :body - :response-time ms '));
 mongoose.connect('mongodb://localhost:27017/chat_test');
+
+const io = new Server(server, {
+  cookie: {
+    name: 'io',
+    path: '/',
+    httpOnly: true,
+    sameSite: 'lax',
+  },
+});
 
 app.use('/auth', Routes.authRoutes);
 app.use('/users', auth, Routes.userRoutes(io));
