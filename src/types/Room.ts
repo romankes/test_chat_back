@@ -1,3 +1,4 @@
+import PersistentFile from 'formidable/PersistentFile';
 import {App} from './App';
 import {Message} from './Message';
 import {User} from './User';
@@ -18,7 +19,12 @@ export namespace Room {
       title: string;
       users: string[];
       admin: App.Id;
+      avatar?: string;
     };
+  };
+
+  export type Avatar = {
+    avatar: PersistentFile;
   };
 
   export type CreateRes = {
@@ -28,7 +34,7 @@ export namespace Room {
   export type ListParams = {
     page: number;
     per: number;
-    name: string;
+    title: string;
   };
 
   export type ListBuilder = {
@@ -38,6 +44,8 @@ export namespace Room {
     avatar: string;
     updatedAt: string;
     users: User.ShowBuilder[];
+    createdAt: string;
+    notReadCount: number;
   };
 
   export type ShowBuilder = ListBuilder & {};
@@ -48,7 +56,7 @@ export namespace Room {
   };
 
   export type ShowParams = {
-    id: string;
+    id: App.Id;
   };
 
   export type ShowRes = {

@@ -8,4 +8,5 @@ export const showBuilder = (user: TUser): User.ShowBuilder => ({
   avatar: user.avatar,
   updatedAt: user.updatedAt,
   online: user.online,
+  createdAt: user.createdAt,
 });

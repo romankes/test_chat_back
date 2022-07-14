@@ -3,6 +3,7 @@ import {
   TListPayload,
   TListReturn,
   TRemoveParams,
+  TShowParams,
   TShowReturn,
 } from './types';
 
@@ -16,7 +17,7 @@ import {
   UserModel,
 } from '@/models';
 import {App, Room} from '@/types';
-import {broadcast, sendPush} from '@/helpers';
+import {broadcast, extractUsers, sendPush} from '@/helpers';
 import {messageBuilders, roomBuilders} from '@/builders';
 
 export const create = async ({
@@ -30,18 +31,20 @@ export const create = async ({
     if (docs.length) {
       const doc = await RoomModel.create({
         title: data.room.title,
-        users: data.room.users,
+        users: [...data.room.users, data.room.admin],
         admin: data.room.admin,
+        avatar: data.room?.avatar || '',
       });
+
+      await UserModel.updateMany(
+        {_id: data.room.users},
+        {$push: {rooms: doc._id}},
+      );
 
       const users = docs.filter((doc) => !doc._id.equals(`${currentUser}`));
 
       const room = roomBuilders.listBuilder(
         (await (await doc.populate('users')).toJSON()) as TRoom<TUser>,
-      );
-
-      await Promise.all(
-        docs.map(async (doc) => await doc.update({$push: {rooms: room}})),
       );
 
       broadcast(
@@ -83,17 +86,21 @@ export const create = async ({
 export const list = async ({
   page,
   per,
-  userId,
+  initiator,
+  title,
 }: TListPayload): Promise<TListReturn | null> => {
   try {
     const docs = await RoomModel.find(
-      //@ts-ignore
-      {users: {$in: userId}},
+      {
+        users: initiator,
+
+        title: {$regex: title, $options: 'i'},
+      },
       {},
       {skip: (page - 1) * per, limit: per},
     ).populate('users');
 
-    const totalCount = await RoomModel.countDocuments({users: userId});
+    const totalCount = await RoomModel.countDocuments({users: initiator});
 
     const rooms = await Promise.all(
       docs.map(async (doc) => {
@@ -101,8 +108,16 @@ export const list = async ({
           sort: {createdAt: -1},
         }).populate('user');
 
+        const notReadCount = await MessageModel.countDocuments({
+          room: doc._id,
+          notRead: initiator,
+        });
+
         return {
-          ...roomBuilders.listBuilder(doc.toJSON() as TRoom<TUser>),
+          ...roomBuilders.listBuilder({
+            ...(doc.toJSON() as TRoom<TUser>),
+            notReadCount,
+          }),
           message:
             message &&
             messageBuilders.listBuilder(message.toJSON() as TMessage<TUser>),
@@ -113,8 +128,8 @@ export const list = async ({
     return {
       rooms: rooms.sort(
         (curr, next) =>
-          new Date(curr?.message?.updatedAt || curr.updatedAt).getTime() -
-          new Date(next?.message?.updatedAt || next.updatedAt).getTime(),
+          new Date(next?.message?.updatedAt || next.updatedAt).getTime() -
+          new Date(curr?.message?.updatedAt || curr.updatedAt).getTime(),
       ),
       totalCount,
     };
@@ -125,13 +140,25 @@ export const list = async ({
   }
 };
 
-export const show = async (id: string): Promise<TShowReturn | null> => {
+export const show = async ({
+  id,
+  initiator,
+}: TShowParams): Promise<TShowReturn | null> => {
   try {
-    const doc = await RoomModel.findById(id).populate('users');
+    const doc = await RoomModel.findOne({_id: id, users: initiator}).populate(
+      'users',
+    );
     if (doc) {
       const messages = await MessageModel.find({room: id}, '-room', {
         sort: {createdAt: -1},
       }).populate('user');
+
+      await UserModel.findByIdAndUpdate(initiator, {currentRoom: id});
+
+      await MessageModel.updateMany(
+        {room: doc._id, notRead: initiator},
+        {$pull: {notRead: initiator}},
+      );
 
       return {
         ...roomBuilders.showBuilder(doc.toJSON() as TRoom<TUser>),
@@ -164,25 +191,23 @@ export const remove = async ({
       await MessageModel.deleteMany({room: room._id});
       await UserModel.updateMany({_id: room.users}, {$pull: {users: room._id}});
 
-      //TODO: REFACTOR
-      const users = room.users.filter(
-        (item: any) => item._id !== initiator,
-      ) as unknown as TUser[];
+      const {socketIds, deviceTokens} = extractUsers({
+        users: room.users as unknown as TUser[],
+        initiator,
+      });
 
-      broadcast(
-        io,
-        users.map(({socketId}) => socketId),
-        {
-          event: 'REMOVE_ROOM',
-          data: {
-            room: room._id,
-          },
+      //TODO: refactor
+
+      broadcast(io, socketIds, {
+        event: 'REMOVE_ROOM',
+        data: {
+          room: room._id,
         },
-      );
+      });
 
       await Promise.all(
-        users.map(
-          async ({deviceToken}) =>
+        deviceTokens.map(
+          async (deviceToken) =>
             deviceToken &&
             (await sendPush(
               deviceToken,

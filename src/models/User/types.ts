@@ -8,6 +8,7 @@ export type TUser = {
   online: boolean;
   password: string;
   updatedAt: string;
+  createdAt: string;
 
   rooms: string[];
 

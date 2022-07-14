@@ -1,5 +1,5 @@
 import {userBuilders} from '@/builders';
-import {errors, handleError} from '@/helpers';
+import {errors, formParser, handleError} from '@/helpers';
 import {userService} from '@/services';
 
 import {App, User} from '@/types';
@@ -51,7 +51,9 @@ export const list = async (
   res: App.BaseResponse,
 ) => {
   try {
-    const result = await userService.list(req.query);
+    const {user} = res.locals;
+
+    const result = await userService.list({...req.query, initiator: user._id});
 
     if (!result) {
       return handleError(res, errors.paramsIsInvalid());
@@ -73,9 +75,18 @@ export const update = async (
   try {
     const {user} = res.locals;
 
+    const {fields, files} = await formParser<User.UpdateBody, User.Avatar>({
+      req,
+      fullPath: ['users'],
+    });
+
+    const path =
+      files?.avatar &&
+      files.avatar.toJSON().filepath.split('/').slice(-4).join('/');
+
     const newUser = await userService.update({
       id: user._id,
-      user: req.body,
+      user: path ? {...fields, avatar: path} : fields,
     });
 
     if (!newUser) {

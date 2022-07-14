@@ -10,7 +10,7 @@ export const messageRoutes = (io: Server) => {
 
   messageRoutes.post(
     '/',
-    validate(messageSchema.createSchema),
+    // validate(messageSchema.createSchema),
     messageController.create(io),
   );
   messageRoutes.delete(

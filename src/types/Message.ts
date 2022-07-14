@@ -1,3 +1,4 @@
+import PersistentFile from 'formidable/PersistentFile';
 import {App} from './App';
 import {User} from './User';
 
@@ -9,6 +10,12 @@ export namespace Message {
   export type CreateBody = {
     text: string;
     roomId: App.Id;
+
+    image?: string;
+  };
+
+  export type Image = {
+    image: PersistentFile;
   };
 
   export type ListBuilder = {
@@ -18,5 +25,8 @@ export namespace Message {
     room: App.Id;
     user: User.ShowBuilder;
     updatedAt: string;
+    createdAt: string;
+
+    image: string | null;
   };
 }

@@ -1,4 +1,4 @@
-import {errors, handleError} from '@/helpers';
+import {errors, formParser, handleError} from '@/helpers';
 import {roomService} from '@/services';
 import {App, Room} from '@/types';
 
@@ -12,10 +12,24 @@ export const create =
     res: App.BaseResponse<Room.CreateRes>,
   ) => {
     try {
+      const {fields, files} = await formParser<Room.CreateBody, Room.Avatar>({
+        req,
+        fullPath: ['rooms'],
+      });
+
+      const path =
+        files?.avatar &&
+        files.avatar.toJSON().filepath.split('/').slice(-4).join('/');
+
+      const data = {
+        ...fields.room,
+        admin: res.locals.user._id,
+      };
+
       const room = await roomService.create({
         currentUser: res.locals.user._id,
         data: {
-          room: {...req.body.room, admin: res.locals.user._id},
+          room: path ? {...data, avatar: path} : data,
         },
         io,
       });
@@ -38,7 +52,7 @@ export const list = async (
   try {
     const result = await roomService.list({
       ...req.query,
-      userId: res.locals.user._id,
+      initiator: res.locals.user._id,
     });
 
     if (!result) {
@@ -58,8 +72,9 @@ export const show = async (
 ) => {
   try {
     const {id} = req.params;
+    const {user} = res.locals;
 
-    const room = await roomService.show(id);
+    const room = await roomService.show({id, initiator: user._id});
 
     if (!room) {
       return handleError(res, errors.roomNotFound());

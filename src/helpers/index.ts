@@ -15,3 +15,6 @@ export {broadcast} from './broadcast';
 
 //USERS
 export {extractUsers} from './extractUsers';
+
+//PARSERS
+export {formParser} from './formParser';

@@ -7,7 +7,14 @@ import {
 } from './types';
 
 import logger from 'jet-logger';
-import {MessageModel, RoomModel, TMessage, TRoom, TUser} from '@/models';
+import {
+  MessageModel,
+  RoomModel,
+  TMessage,
+  TRoom,
+  TUser,
+  UserModel,
+} from '@/models';
 import {messageBuilders} from '@/builders';
 import {broadcast, extractUsers, sendPush} from '@/helpers';
 
@@ -24,30 +31,37 @@ export const create = async ({
     if (roomDoc) {
       const room = roomDoc.toJSON() as TRoom<TUser>;
 
-      const users = room.users
-        .filter((user) => user._id !== data.userId)
-        .map(({_id, socketId, deviceToken}) => ({_id, socketId, deviceToken}));
+      const {deviceTokens, socketIds, ids} = extractUsers({
+        users: room.users as TUser[],
+        initiator: data.userId,
+      });
+
+      const usersInRoom = await await UserModel.find({currentRoom: room._id});
+
+      const notRead = room.users
+        .filter(
+          (user) =>
+            usersInRoom.findIndex(({_id}) => `${_id}` === `${user._id}`) === -1,
+        )
+        .map(({_id}) => _id);
 
       const doc = await MessageModel.create({
         room: data.roomId,
         text: data.text,
         user: data.userId,
-        notRead: users.map(({_id}) => _id),
+        image: data.image,
+        notRead,
       });
 
       const message = messageBuilders.listBuilder(
         (await (await doc.populate('user')).toJSON()) as TMessage<TUser>,
       );
 
-      broadcast(
-        io,
-        users.map(({socketId}) => socketId),
-        {event: 'CREATE_ROOM', data: message},
-      );
+      broadcast(io, socketIds, {event: 'CREATE_MESSAGE', data: message});
 
       Promise.all(
-        users.map(
-          ({deviceToken}) =>
+        deviceTokens.map(
+          (deviceToken) =>
             deviceToken &&
             sendPush(
               deviceToken,

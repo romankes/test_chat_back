@@ -8,7 +8,7 @@ export type TCratePayload = {
 };
 
 export type TListPayload = Room.ListParams & {
-  userId: App.Id;
+  initiator: App.Id;
 };
 
 export type Room = Room.ListBuilder & {
@@ -18,6 +18,11 @@ export type Room = Room.ListBuilder & {
 export type TListReturn = {
   totalCount: number;
   rooms: Room[];
+};
+
+export type TShowParams = {
+  initiator: App.Id;
+  id: App.Id;
 };
 
 export type TShowReturn = Room.ShowBuilder & {

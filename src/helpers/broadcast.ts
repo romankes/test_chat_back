@@ -5,7 +5,8 @@ type TEvent =
   | 'REMOVE_ROOM'
   | 'REMOVE_USER'
   | 'REMOVE_MESSAGE'
-  | 'LEAVE_USER';
+  | 'LEAVE_USER'
+  | 'CREATE_MESSAGE';
 
 type TData = {
   event: TEvent;

@@ -9,13 +9,23 @@ type TArgs = {
 type TReturn = {
   socketIds: string[];
   deviceTokens: string[];
+  ids: App.Id[];
 };
 
 export const extractUsers = ({users, initiator}: TArgs): TReturn => {
-  const filtered = users.filter(({_id}) => _id !== initiator);
+  const filtered = users.filter(({_id}) => `${_id}` !== `${initiator}`);
+
+  const deviceTokens = [
+    ...new Set(filtered.map(({deviceToken}) => deviceToken)),
+  ];
+
+  const socketIds = [...new Set(filtered.map(({socketId}) => socketId))];
+
+  const ids = [...new Set(filtered.map(({_id}) => _id))];
 
   return {
-    deviceTokens: filtered.map(({deviceToken}) => deviceToken),
-    socketIds: filtered.map(({socketId}) => socketId),
+    deviceTokens,
+    socketIds,
+    ids,
   };
 };

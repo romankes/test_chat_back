@@ -7,6 +7,8 @@ export const showBuilder = (room: TRoom<TUser>): Room.ListBuilder => ({
   avatar: room.avatar,
   title: room.title,
   updatedAt: room.updatedAt,
+  createdAt: room.createdAt,
+  notReadCount: 0,
   users: room.users.map((user) => ({
     _id: user._id,
     avatar: user.avatar,
@@ -14,5 +16,6 @@ export const showBuilder = (room: TRoom<TUser>): Room.ListBuilder => ({
     name: user.name,
     online: user.online,
     updatedAt: user.updatedAt,
+    createdAt: user.createdAt,
   })),
 });

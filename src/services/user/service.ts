@@ -77,11 +77,13 @@ export const list = async ({
   page,
   per,
   name = '',
+  initiator,
 }: TParamsList): Promise<TReturnList | null> => {
   try {
     const docs = await UserModel.find(
       {
         name: {$regex: name, $options: 'i'},
+        _id: {$ne: initiator},
       },
       '',
       {skip: (page - 1) * per, limit: per},

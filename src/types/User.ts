@@ -1,3 +1,4 @@
+import PersistentFile from 'formidable/PersistentFile';
 import {App} from './App';
 
 export namespace User {
@@ -16,11 +17,18 @@ export namespace User {
     updatedAt: string;
     avatar: string;
     name: string;
+
+    createdAt: string;
   };
 
   export type UpdateBody = {
     deviceToken?: string;
     name?: string;
     avatar?: string;
+    currentRoom?: string;
+  };
+
+  export type Avatar = {
+    avatar: PersistentFile;
   };
 }

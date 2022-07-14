@@ -27,7 +27,6 @@ const server = createServer(app);
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('uploads'));
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser('polopolo'));
 
@@ -47,6 +46,7 @@ const io = new Server(server, {
   },
 });
 
+app.use('/public/files', Routes.uploadRoutes);
 app.use('/auth', Routes.authRoutes);
 app.use('/users', auth, Routes.userRoutes(io));
 app.use('/rooms', auth, Routes.roomRoutes(io));

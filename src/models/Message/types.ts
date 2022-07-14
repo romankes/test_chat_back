@@ -7,4 +7,6 @@ export type TMessage<U = App.Id, R = App.Id> = {
   _id: string;
   notRead: App.Id[];
   updatedAt: string;
+  createdAt: string;
+  image: string | null;
 };

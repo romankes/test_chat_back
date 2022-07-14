@@ -7,5 +7,6 @@ export const listBuilder = (user: TUser): User.ListBuilder => ({
   name: user.name,
   avatar: user.avatar,
   updatedAt: user.updatedAt,
+  createdAt: user.createdAt,
   online: user.online,
 });

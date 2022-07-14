@@ -10,6 +10,7 @@ export type TParamsList = {
   page: number;
   per: number;
   name: string;
+  initiator: App.Id;
 };
 
 export type TReturnList = {users: User.ListBuilder[]; totalCount: number};
@@ -20,6 +21,7 @@ export type TParamsUpdate = {
     deviceToken?: string;
     avatar?: string;
     name?: string;
+    currentRoom?: string;
   };
 };
 

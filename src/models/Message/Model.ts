@@ -11,6 +11,10 @@ const MessageSchema = new Schema(
     room: {
       type: Schema.Types.ObjectId,
     },
+    image: {
+      type: String,
+      default: null,
+    },
     notRead: [String],
   },
   {timestamps: true},

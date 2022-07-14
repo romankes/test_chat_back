@@ -8,6 +8,8 @@ export const listBuilder = (message: TMessage<TUser>): Message.ListBuilder => ({
   notRead: message.notRead,
   room: message.room,
   text: message.text,
+  image: message.image,
+  createdAt: message.createdAt,
   updatedAt: message.updatedAt,
   user: {
     _id: message.user._id,
@@ -16,5 +18,6 @@ export const listBuilder = (message: TMessage<TUser>): Message.ListBuilder => ({
     name: message.user.name,
     online: message.user.online,
     updatedAt: message.user.updatedAt,
+    createdAt: message.createdAt,
   },
 });

@@ -8,4 +8,5 @@ export type TRoom<U = App.Id> = {
   avatar: string;
   createdAt: string;
   updatedAt: string;
+  notReadCount?: number;
 };
